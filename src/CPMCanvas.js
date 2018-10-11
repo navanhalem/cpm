@@ -165,6 +165,42 @@ CPMCanvas.prototype = {
 		}
 	},
 
+	/* Converts rgb value ( 0 -> 255 ) to hex vaulue ( 00 -> FF ) */
+	rgbToHex : function (rgb) {
+		var hex = Number(rgb).toString(16);
+		if (hex.length < 2) {
+			hex = "0" + hex;
+		}
+		return hex;
+	},
+
+	/* Converts rgb array to hex color string ((0, 0, 255) -> "0000FF") */
+	fullColorHex : function(r,g,b) {
+		var red = this.rgbToHex(r);
+		var green = this.rgbToHex(g);
+		var blue = this.rgbToHex(b);
+		return red+green+blue;
+	},
+
+	/* Converts hex color string array to rgb ("0000FF" -> [0,0,255]) */
+	hexToRgb : function( hex ){
+		let bigint = parseInt(hex, 16)
+		let r = (bigint >> 16) & 255
+		let g = (bigint >> 8) & 255
+		let b = bigint & 255
+		return [r,g,b]
+	},
+
+	/* Picks a color between color1 and color2 based on the weight */
+	pickCol : function( color1, color2, weight ) {
+		var w1 = weight;
+		var w2 = 1 - w1;
+		var rgb = [Math.round(color1[0] * w1 + color2[0] * w2),
+        Math.round(color1[1] * w1 + color2[1] * w2),
+        Math.round(color1[2] * w1 + color2[2] * w2)];
+		return rgb;
+	},
+
 	/* Draw all cells of cellkind "kind" in color col (hex). */
 	drawCells : function( kind, col ){
 		col = col || "000000"
@@ -175,6 +211,17 @@ CPMCanvas.prototype = {
 		var cst = Object.keys( this.C.cellpixelstype ), i
 		for( i = 0 ; i < cst.length ; i ++ ){
 			if( this.C.cellKind(this.C.cellpixelstype[cst[i]]) == kind ){
+				// If cellkind == 2 draw between gray and red depending on how infected the cell is
+				if (kind == 2) {
+					cell_id = this.C.pixti(cst[i])
+					if (this.C.killing[cell_id] == this.C.maxKilling) {
+						this.col( "000000" )
+					}
+					else {
+						hexCode = this.pickCol(this.hexToRgb( col ), this.hexToRgb( "CC0000" ), 1 - ( this.C.infection[cell_id]/ this.C.maxInfection ) )
+						this.col( this.fullColorHex(hexCode[0], hexCode[1], hexCode[2]) )
+					}
+				}
 				this.pxf( this.i2p( cst[i] ) )
 			}
 		}
