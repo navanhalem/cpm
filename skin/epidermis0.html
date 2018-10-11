@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>T cell in epidermis</title>
+<meta charset="utf-8">
+<script type="text/javascript" src="../src/DiceSet.js"></script>
+<script type="text/javascript" src="../src/CPM.js"></script>
+<script type="text/javascript" src="../src/CPMStats.js"></script>
+<script type="text/javascript" src="../src/CPMCanvas.js"></script>
+<script type="text/javascript" src="../src/TrackCanvas.js"></script>
+<script type="text/javascript" src="./simulation-tissue.js"></script>
+<script type="text/javascript" src="./CPMskin-template.js"></script>
+<script type="text/javascript" src="./CPMskin-settings.js"></script>
+<script type="text/javascript">
+
+
+var C,Cim,Ct,Cs, showtracks=simsettings["VIEWTRACKS"], stopped=true, zoom=2, wrap=[0,0]
+
+// used to name the sliders
+var names = { 
+	LAMBDA_ACT : "&lambda;<sub>Act</sub>",
+	MAX_ACT : "Max<sub>Act</sub>",
+	LAMBDA_P : "&lambda;<sub>P,tissue</sub>" 
+}
+
+function initialize(){
+	Cset.conf.LAMBDA_ACT[1]=400
+	C = new CPM( Cset.ndim, Cset.field_size, Cset.conf)
+	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
+	Cs = new CPMStats( C )
+	Ct = new TrackCanvas( Cs, {zoom:zoom} )
+
+	Cim.el.onclick=function(){
+			sim.stop = true
+			document.location.href = Cim.el.toDataURL("image/png").
+				replace("image/png", "image/octet-stream");
+ 		}
+	//simsettings["CANVASCOLOR"] = "eaecef"
+
+	sim = new simulation( C, Cim, Cs, simsettings, Ct )
+
+	sim.initialize()
+	step()
+}
+
+// Perform a step in the model
+function step(){
+
+	for( var i = 0; i < 1; i++ ){
+		sim.timestep()
+	}
+
+	sim.drawCanvas()
+
+	if( sim.time+1 < sim.runtime ){
+		//if( sim.atBorder() ){
+		//	sim.reset()
+		//}
+		if( !sim.stop ){
+			requestAnimationFrame( step )	
+		}
+		
+	}
+}
+
+// For controlling the simulation
+function startSim(){
+	sim.stop = false
+	step()
+}
+
+function stopSim(){
+	sim.stop = true
+}
+
+</script>
+</script>
+
+
+<style type="text/css">
+body, html{
+	margin: 5 ; padding: 5;
+
+}
+body{
+	 min-width: 300px; min-height: 300pxs
+}
+</style>
+
+
+<body onload="initialize()">
+
+
+
+</body>
+</html>
