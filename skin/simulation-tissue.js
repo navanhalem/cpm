@@ -49,12 +49,12 @@ simulation.prototype = {
 		// Seed the right number of cells for each cellkind
 		var totalcells = 0
 		for( cellkind = 0; cellkind < nrcells.length; cellkind ++ ){
-			
+
 			for( i = 0; i < nrcells[cellkind]; i++ ){
 				// first cell always at the midpoint. Any other cells
-				// randomly.				
-				if( totalcells == 0 ){
-					this.C.seedCellAt( cellkind+1, this.C.midpoint )
+				// randomly.
+				if( totalcells == 0){
+					this.C.seedCellAt( cellkind+1, this.C.midpoint, false )
 					totalcells++
 				} else {
 					this.C.seedCell( cellkind+1 )
@@ -73,21 +73,128 @@ simulation.prototype = {
 
 	},
 
+	getCellsToAffect : function( affectors, target ){
+		var cellsToAffect = {}
+		for ( i = 0; i < affectors.length; i++ ) {
+			infectedCellNeighbors = Cs.cellNeighborsList(affectors[i])[1]
+			for (const [key, value] of Object.entries(Cs.cellNeighborsList(affectors[i])[1])) {
+				if (this.C.infection[key] == target){
+					if ( key in cellsToAffect ){
+						cellsToAffect[key] = cellsToAffect[key] + value
+					}
+					else {
+						cellsToAffect[key] = value
+					}
+				}
+			}
+		}
+		return cellsToAffect
+	},
+
+	findCells : function(infectionLevel){
+		var cells = []
+		for( i = 0; i < C.t2k.length; i++ ) {
+			if( this.C.infection[i] == infectionLevel ) {
+				cells.push(i)
+			}
+		}
+		return cells
+	},
+
+	kill : function(){
+		var killers = this.findCells(-1)
+		var infectedNeighbors = this.getCellsToAffect( killers, this.C.maxInfection )
+
+		for (const [key, value] of Object.entries(infectedNeighbors)){
+			if (this.C.killing[key] < this.C.maxKilling){
+				this.C.killing[key] = this.C.killing[key] + value
+				if(this.C.killing[key] >= this.C.maxKilling){
+					this.C.killing[key] = this.C.maxKilling
+					this.C.infection[key] = -2
+				}
+				//console.log("KILL")
+			}
+		}
+
+		//console.log(infectedNeighbors)
+	},
+
+	infectOthers : function(){
+		var infected = this.findCells(this.C.maxInfection)
+		var skinNeighbors = this.getCellsToAffect( infected, 0 )
+
+		for (const [key, value] of Object.entries(skinNeighbors)){
+			let rand = Math.random()
+			if (rand < value * 0.00005){
+				this.C.infection[key] = 1
+				//console.log("INFECT")
+			}
+		}
+
+		//console.log(skinNeighbors)
+	},
+
+	getMoreInfected : function(){
+		for( i = 0; i < C.t2k.length; i++ ) {
+			if( this.C.infection[i] > 0 && this.C.infection[i] < this.C.maxInfection ) {
+				this.C.infection[i] = this.C.infection[i] + 1
+			}
+		}
+	},
+
+	replaceInfectionBorderCell : function(cell_idToReplace){
+		// replace border cell with most infected neighbors with this cell
+		var skinNeighbors = this.getCellsToAffect( this.findCells(this.C.maxInfection), 0 )
+		var maxKey = -1
+		var maxVal = -1
+		for (const [key, value] of Object.entries(skinNeighbors)){
+			if (value > maxVal) {
+				maxKey = key
+				maxVal = value
+			}
+		}
+		this.C.killing[maxKey] = this.C.killing[cell_idToReplace]
+		this.C.infection[maxKey] = this.C.infection[cell_idToReplace]
+	},
+
+	addTCell : function() {
+		var cell_idToReplace = -1
+		typeToReplace = 1
+		while ( typeToReplace != 2) {
+			let x = Math.floor( Math.random()*( this.C.field_size.x + 1 ) )
+			let y = Math.floor( Math.random()*( this.C.field_size.y + 1 ) )
+			cell_idToReplace = this.C.pixt([x, y])
+			typeToReplace = this.C.cellKind(cell_idToReplace)
+		}
+		if (this.C.killing[cell_idToReplace] < 7500 && this.C.infection[cell_idToReplace] > 0) {
+			this.replaceInfectionBorderCell(cell_idToReplace)
+		}
+		this.C.infection[cell_idToReplace] = -1
+		this.C.killing[cell_idToReplace] = -1
+		this.C.setCellKind(cell_idToReplace, 1)
+	},
+
 	// Update the grid and either draw it or print track output
 	timestep : function(){
 		// Update the grid with one MCS
+		this.kill()
+		this.infectOthers()
+		this.getMoreInfected()
+		if ((this.time + 1) % 100 == 0 && this.C.countCells(1) < this.C.maxTCells) {
+			this.addTCell()
+		}
 		this.C.monteCarloStep()
 		this.time++
 	},
 
 	atBorder : function(){
-	
+
 		var cbp = this.C.cellborderpixels
 		var i,p,j
 
 		// only check in detail if centroid is within 20px of grid borders
 		if( this.nearBorder(this.borderthreshold) ){
-			
+
 			// loop over the cellborderpixels, and check if they are at the grid border.
 			for( i = 0; i < cbp.length; i++ ){
 				p = this.C.i2p( cbp.elements[i] )
@@ -159,7 +266,8 @@ simulation.prototype = {
 				this.Cim.drawActivityValues( cellkind + 1 )
 			}
 			if( showborders[ cellkind ] ){
-				this.Cim.drawCellBorders( cellkind+1, "AAAAAA" )
+				//this.Cim.drawCellBorders( cellkind+1, "AAAAAA" )
+				this.Cim.drawCellBorders( cellkind+1, "000000" )
 			}
 			if( this.viewtracks ){
 				if( trackcolor[ cellkind ] != -1 ){
