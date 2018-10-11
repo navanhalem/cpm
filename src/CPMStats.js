@@ -532,7 +532,42 @@ CPMStats.prototype = {
 			}
 			cp[t].push( px[i] )
 		}
-		return cp		
+		return cp
+	},
+
+	// returns a list of all cell ids of the cells that border to "cell" and are of a different type (infection amount differs)
+	// a dictionairy with keys = neighbor cell ids, and values = number of "cell"-pixels the neighbor cell borders to
+	cellNeighborsList : function( cell ) {
+		cellborderpixels = this.cellborderpixelsi()[cell]
+		neigh_cell = []
+		neigh_cell_amountborder = {}
+		//loop over border pixels of cell
+		for ( cellpix = 0; cellpix < cellborderpixels.length; cellpix++ ) {
+			//get neighbouring pixels of borderpixel of cell
+			neighbours_of_borderpixel_cell = sim.C.neighi(cellborderpixels[cellpix])
+			//don't add a pixel in cell more than twice
+			added_to = []
+			//loop over neighbouring pixels and store the parent cell if it is different from
+			//cell, add or increment the key corresponding to the neighbor in the dictionairy
+			for ( neighborpix = 0; neighborpix < neighbours_of_borderpixel_cell.length; neighborpix ++ ) {
+				cell_id = sim.C.pixti(neighbours_of_borderpixel_cell[neighborpix])
+				if (cell_id != cell && C.infection[cell_id] != C.infection[cell]) {
+					if (!neigh_cell.includes(cell_id)) {
+						neigh_cell.push(cell_id)
+					}
+					if (!added_to.includes(cell_id)) {
+						if (cell_id in neigh_cell_amountborder) {
+							neigh_cell_amountborder[cell_id] = neigh_cell_amountborder[cell_id]+1
+						}
+						else {
+							neigh_cell_amountborder[cell_id] = 1
+						}
+						added_to.push(cell_id)
+					}
+				}
+			}
+		}
+		return [neigh_cell, neigh_cell_amountborder]
 	}
 
 }
