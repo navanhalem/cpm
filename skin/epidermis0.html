@@ -6,6 +6,8 @@
 <script type="text/javascript" src="../src/CPM.js"></script>
 <script type="text/javascript" src="../src/CPMStats.js"></script>
 <script type="text/javascript" src="../src/CPMCanvas.js"></script>
+<script type="text/javascript" src="../src/BGCanvas.js"></script>
+<script type="text/javascript" src="../src/CPMchemotaxis.js"></script>
 <script type="text/javascript" src="../src/TrackCanvas.js"></script>
 <script type="text/javascript" src="./simulation-tissue.js"></script>
 <script type="text/javascript" src="./CPMskin-template.js"></script>
@@ -16,16 +18,18 @@
 var C,Cim,Ct,Cs, showtracks=simsettings["VIEWTRACKS"], stopped=true, zoom=2, wrap=[0,0]
 
 // used to name the sliders
-var names = { 
+var names = {
 	LAMBDA_ACT : "&lambda;<sub>Act</sub>",
 	MAX_ACT : "Max<sub>Act</sub>",
-	LAMBDA_P : "&lambda;<sub>P,tissue</sub>" 
+	LAMBDA_P : "&lambda;<sub>P,tissue</sub>"
 }
 
 function initialize(){
-	Cset.conf.LAMBDA_ACT[1]=400
-	C = new CPM( Cset.ndim, Cset.field_size, Cset.conf)
+	// Cset.conf.LAMBDA_ACT[1]=400
+	Cset = CsetChemotaxis
+	C = new CPMchemotaxis( Cset.ndim, Cset.field_size, Cset.conf)
 	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
+	Cimgradient = new BGCanvas( C, {zoom:zoom, wrap:wrap} )
 	Cs = new CPMStats( C )
 	Ct = new TrackCanvas( Cs, {zoom:zoom} )
 
@@ -45,6 +49,8 @@ function initialize(){
 // Perform a step in the model
 function step(){
 
+	console.log(C.conf.GRADIENT_TYPE)
+
 	for( var i = 0; i < 1; i++ ){
 		sim.timestep()
 	}
@@ -56,9 +62,9 @@ function step(){
 		//	sim.reset()
 		//}
 		if( !sim.stop ){
-			requestAnimationFrame( step )	
+			requestAnimationFrame( step )
 		}
-		
+
 	}
 }
 
