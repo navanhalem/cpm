@@ -122,13 +122,39 @@ BGCanvas.prototype = {
 		}
 		this.setopacity( 1 )
 
+	},
+	drawChemokineGradientFromList : function( col ){
+
+		var i,j,alpha
+		col = col || "000000"
+		this.col( col )
+
+		for( i = 0; i < this.C.field_size.x; i++ ){
+			for( j = 0; j < this.C.field_size.y; j++ ){
+				// Clear the canvas
+				if(col == 'ffffff') {
+					this.setopacity(1)
+				}
+				// Color the chemokine
+				else {
+
+					alpha = Math.log10(this.C.chemokinelevel[i][j])/4
+					if (alpha > 0.00000001) {
+						// this.setopacity( (alpha + 8)/12 )
+						this.setopacity(alpha)
+					} else {
+						this.setopacity(0)//this.C.chemokinelevel[i][j])
+					}
+
+				}
+				this.pxf( [i,j] )
+			}
+		}
+		this.setopacity(1)
 	}
-
-
 }
 
 /* This allows using the code in either the browser or with nodejs. */
 if( typeof module !== "undefined" ){
 	module.exports = BGCanvas
 }
-

@@ -1,25 +1,26 @@
-/** The core CPM class. Can be used for two- or three-dimensional simulations. 
+/** The core CPM class. Can be used for two- or three-dimensional simulations.
 	Usable from browser and node.js.
 */
-    
+
 
 class CPM {
 
 	constructor( ndim, field_size, conf ){
-	
+
 		// Attributes based on input parameters
-		this.field_size = field_size			/* grid size ( Note: the grid will run from 0 to 
+		this.field_size = field_size			/* grid size ( Note: the grid will run from 0 to
 								field_size pixels, so the actual size in pixels is
 								one larger. ) */
 		this.ndim = ndim				// grid dimensions (2 or 3)
 		this.conf = conf				// input parameter settings; see documentation.
 		this.maxInfection = 2000		// cell is completely infected at this number of infection, now infection can spread
 		this.maxKilling = 7500			// infected cells will be killed slowly, when their killing is this high, they die
-		this.maxTCells = 10				// Maximum number of TCells allowed
+		this.maxTCells = 100				// Maximum number of TCells allowed
+		this.infectionStart = 0.1		// radius of the infection as a percentage of the field size
 
 		// Some functions/attributes depend on ndim:
 		if( ndim == 2 ){
-	
+
 			// wrapper functions:
 			//this.neigh = this.neigh2D		/* returns coordinates of neighbor pixels
 			//					(including diagonal neighbors) */
@@ -1086,8 +1087,7 @@ class CPM {
 				p = [this.ran( 0, this.field_size.x-1 ),
 					this.ran( 0, this.field_size.y-1 )]
 				if ( kind == 2 ){
-					infected = this.changeIfCenter(p, 30)
-
+					infected = this.changeIfCenter(p, this.field_size.x*this.infectionStart)
 				}
 				if( this.ndim == 3 ){
 					p.push( this.ran( 0, this.field_size.z-1 ) )

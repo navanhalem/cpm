@@ -1,5 +1,3 @@
-//function simulation( C, Cim, Cs, outputtype, conf, Ct  ){
-
 
 
 function simulation( C, Cim, Cs, conf, Ct  ){
@@ -23,7 +21,7 @@ function simulation( C, Cim, Cs, conf, Ct  ){
 	this.save = this.conf["SAVEIMG"]
 	this.runtime=this.conf["RUNTIME"]
 	this.simtype = this.conf["SIMTYPE"] || "2D"
-	
+
 	// to track the time of the actual simulation (no burnin)
 	this.time = 0
 	this.borderthreshold = 30
@@ -53,13 +51,13 @@ simulation.prototype = {
 			for( i = 0; i < nrcells[cellkind]; i++ ){
 				// first cell always at the midpoint. Any other cells
 				// randomly.
-				if( totalcells == 0){
-					this.C.seedCellAt( cellkind+1, this.C.midpoint, false )
-					totalcells++
-				} else {
+				// if( totalcells == 0){
+				// 	this.C.seedCellAt( cellkind+1, this.C.midpoint, false )
+				// 	totalcells++
+				// } else {
 					this.C.seedCell( cellkind+1 )
 					totalcells++
-				}
+				// }
 			}
 		}
 
@@ -76,8 +74,8 @@ simulation.prototype = {
 	getCellsToAffect : function( affectors, target ){
 		var cellsToAffect = {}
 		for ( i = 0; i < affectors.length; i++ ) {
-			infectedCellNeighbors = Cs.cellNeighborsList(affectors[i])[1]
-			for (const [key, value] of Object.entries(Cs.cellNeighborsList(affectors[i])[1])) {
+			infectedCellNeighbors = this.Cs.cellNeighborsList(affectors[i])[1]
+			for (const [key, value] of Object.entries(this.Cs.cellNeighborsList(affectors[i])[1])) {
 				if (this.C.infection[key] == target){
 					if ( key in cellsToAffect ){
 						cellsToAffect[key] = cellsToAffect[key] + value
@@ -93,7 +91,7 @@ simulation.prototype = {
 
 	findCells : function(infectionLevel){
 		var cells = []
-		for( i = 0; i < C.t2k.length; i++ ) {
+		for( i = 0; i < this.C.t2k.length; i++ ) {
 			if( this.C.infection[i] == infectionLevel ) {
 				cells.push(i)
 			}
@@ -135,7 +133,7 @@ simulation.prototype = {
 	},
 
 	getMoreInfected : function(){
-		for( i = 0; i < C.t2k.length; i++ ) {
+		for( i = 0; i < this.C.t2k.length; i++ ) {
 			if( this.C.infection[i] > 0 && this.C.infection[i] < this.C.maxInfection ) {
 				this.C.infection[i] = this.C.infection[i] + 1
 			}
@@ -180,7 +178,7 @@ simulation.prototype = {
 		this.kill()
 		this.infectOthers()
 		this.getMoreInfected()
-		if ((this.time + 1) % 100 == 0 && this.C.countCells(1) < this.C.maxTCells) {
+		if ((this.time + 1) % 20 == 0 && this.C.countCells(1) < this.C.maxTCells) {
 			this.addTCell()
 		}
 		this.C.monteCarloStep()

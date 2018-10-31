@@ -551,7 +551,7 @@ CPMStats.prototype = {
 			//cell, add or increment the key corresponding to the neighbor in the dictionairy
 			for ( neighborpix = 0; neighborpix < neighbours_of_borderpixel_cell.length; neighborpix ++ ) {
 				cell_id = sim.C.pixti(neighbours_of_borderpixel_cell[neighborpix])
-				if (cell_id != cell && C.infection[cell_id] != C.infection[cell]) {
+				if (cell_id != cell && this.C.infection[cell_id] != this.C.infection[cell]) {
 					if (!neigh_cell.includes(cell_id)) {
 						neigh_cell.push(cell_id)
 					}

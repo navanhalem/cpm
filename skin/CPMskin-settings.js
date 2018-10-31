@@ -1,9 +1,9 @@
 	// simulations settings
 	var simsettings = {
 		SIMTYPE : "2D",
-		NRCELLS : [1,280],
+		NRCELLS : [0,280],
 		BURNIN : 0,
-		RUNTIME : 10000,
+		RUNTIME : 12000,
 		CANVASCOLOR : "FFFFFF",
 		STROMACOLOR : "AAAAAA",
 		CELLCOLOR : ["00CC00","4A4C4F"],

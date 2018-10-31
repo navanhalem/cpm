@@ -15,7 +15,7 @@
 <script type="text/javascript">
 
 
-var C,Cim,Ct,Cs, showtracks=simsettings["VIEWTRACKS"], stopped=true, zoom=2, wrap=[0,0]
+var C,Cim,Ct,Cs, showtracks=simsettings["VIEWTRACKS"], stopped=true, zoom=3, wrap=[0,0]
 
 // used to name the sliders
 var names = {
@@ -30,6 +30,7 @@ function initialize(){
 	C = new CPMchemotaxis( Cset.ndim, Cset.field_size, Cset.conf)
 	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
 	Cimgradient = new BGCanvas( C, {zoom:zoom, wrap:wrap} )
+
 	Cs = new CPMStats( C )
 	Ct = new TrackCanvas( Cs, {zoom:zoom} )
 
@@ -56,6 +57,17 @@ function step(){
 	}
 
 	sim.drawCanvas()
+	C.produceChemokine()
+	C.updateValues()
+	C.removeChemokine()
+	// if(sim.time%3 == 0){
+	// 	Cimgradient.drawChemokineGradientFromList( "ffffff" )
+	// 	Cimgradient.drawChemokineGradientFromList( "0061ff" )
+	// 	Cim.ctx.drawImage( Cimgradient.el,0,0)
+	// }
+
+	// Cim.writePNG("output/" + sim.time + ".png")
+
 
 	if( sim.time+1 < sim.runtime ){
 		//if( sim.atBorder() ){

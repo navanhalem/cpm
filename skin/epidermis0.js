@@ -1,0 +1,82 @@
+// require("../src/DiceSet.js")
+// require("../src/CPM.js")
+var CPMStats = require("../src/CPMStats.js")
+var CPMCanvas = require("../src/CPMCanvas.js")
+var BGCanvas = require("../src/BGCanvas.js")
+var CPMchemotaxis = require("../src/CPMchemotaxis.js")
+var TrackCanvas = require("../src/TrackCanvas.js")
+var simulation = require("./simulation-tissue.js")
+var CsetChemotaxis = require("./CPMskin-template.js")
+var simsettings = require("./CPMskin-settings.js")
+
+
+var C,Cim,Ct,Cs, showtracks=simsettings["VIEWTRACKS"], stopped=true, zoom=4, wrap=[0,0]
+
+// used to name the sliders
+var names = {
+	LAMBDA_ACT : "&lambda;<sub>Act</sub>",
+	MAX_ACT : "Max<sub>Act</sub>",
+	LAMBDA_P : "&lambda;<sub>P,tissue</sub>"
+}
+
+var runtime = parseInt(process.argv[2]) || 100
+var savetime = parseInt(process.argv[3]) || 1
+var field_size = parseInt(process.argv[4]) || 200
+var kera_cells_factor = (field_size*field_size)/(200*200)
+var max_CTL = 100*( (field_size*field_size) / (600*600) )
+var chemotaxis = parseInt(process.argv[5]) || 30
+var infectionStart = parseInt(process.argv[6]) || 0.1
+
+function initialize(){
+	Cset = CsetChemotaxis
+	Cset.conf["LAMBDA_CHEMOTAXIS"][1] = chemotaxis
+	C = new CPMchemotaxis( Cset.ndim, {x:field_size,y:field_size}, Cset.conf)
+	C.maxTCells = max_CTL
+	C.infectionStart = infectionStart
+	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
+	Cimgradient = new BGCanvas( C, {zoom:zoom, wrap:wrap} )
+
+	Cs = new CPMStats( C )
+	Ct = null//new TrackCanvas( Cs, {zoom:zoom} )
+
+	simsettings["RUNTIME"] = runtime
+	simsettings["NRCELLS"][1] *= kera_cells_factor
+	sim = new simulation( C, Cim, Cs, simsettings, Ct )
+
+	sim.initialize()
+	step()
+}
+
+// Perform a step in the model
+function step(){
+
+	if (sim.time % savetime == 0) {
+		console.log(sim.time)
+		Cim.writePNG("output/" + sim.time + ".png")
+	}
+
+	for( var i = 0; i < 1; i++ ){
+		sim.timestep()
+	}
+
+	sim.drawCanvas()
+	C.produceChemokine()
+	C.updateValues()
+	C.removeChemokine()
+
+	if( sim.time+1 < sim.runtime ){
+		step()
+	}
+}
+
+// For controlling the simulation
+function startSim(){
+	sim.stop = false
+	step()
+}
+
+function stopSim(){
+	sim.stop = true
+}
+
+initialize()
