@@ -18,7 +18,7 @@
 var CsetChemotaxis = {
 	ndim : 2,
 	field_size : {x:200,y:200},
-	conf : {LAMBDA_CHEMOTAXIS : [0,30,0],
+	conf : {LAMBDA_CHEMOTAXIS : [0,700,0],
 		LAMBDA_CONNECTIVITY : [0,0,0],
 		LAMBDA_P : [0,2,2],
 		LAMBDA_V : [0,30,30],

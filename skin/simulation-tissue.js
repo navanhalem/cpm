@@ -110,11 +110,8 @@ simulation.prototype = {
 					this.C.killing[key] = this.C.maxKilling
 					this.C.infection[key] = -2
 				}
-				//console.log("KILL")
 			}
 		}
-
-		//console.log(infectedNeighbors)
 	},
 
 	infectOthers : function(){
@@ -125,11 +122,8 @@ simulation.prototype = {
 			let rand = Math.random()
 			if (rand < value * 0.00005){
 				this.C.infection[key] = 1
-				//console.log("INFECT")
 			}
 		}
-
-		//console.log(skinNeighbors)
 	},
 
 	getMoreInfected : function(){
@@ -159,8 +153,15 @@ simulation.prototype = {
 		var cell_idToReplace = -1
 		typeToReplace = 1
 		while ( typeToReplace != 2) {
-			let x = Math.floor( Math.random()*( this.C.field_size.x + 1 ) )
-			let y = Math.floor( Math.random()*( this.C.field_size.y + 1 ) )
+			let x = Math.floor( Math.random()*( this.C.field_size.x ) )
+			let y = Math.floor( Math.random()*( this.C.field_size.y ) )
+			if ( this.C.entryBias == 1 ) {
+				while ( Math.random()*800 > this.C.chemokinelevel[x][y]+300 ) {
+					x = Math.floor( Math.random()*( this.C.field_size.x ) )
+					y = Math.floor( Math.random()*( this.C.field_size.y ) )
+					// console.log(x, y)
+				}
+			}
 			cell_idToReplace = this.C.pixt([x, y])
 			typeToReplace = this.C.cellKind(cell_idToReplace)
 		}
@@ -221,7 +222,7 @@ simulation.prototype = {
 			c = centroid[i]
 			var xmax = this.C.field_size.x - threshold - 1,
 				ymax = this.C.field_size.y - threshold -1,
-				zmax = this.C.field_size.z-threshold-1			
+				zmax = this.C.field_size.z-threshold-1
 
 			if( c.x < threshold || c.x > xmax ){
 				return true;
@@ -234,7 +235,7 @@ simulation.prototype = {
 					return true;
 				}
 			}
-		}		
+		}
 
 		return false
 	},
@@ -242,10 +243,10 @@ simulation.prototype = {
 
 	// Draw the grid
 	drawCanvas : function(){
-		
+
 		var canvascolor=this.conf["CANVASCOLOR"], stromacolor=this.conf["STROMACOLOR"],
-			showborders=this.conf["SHOWBORDERS"], 
-			cellcolor=this.conf["CELLCOLOR"], actcolor=this.conf["ACTCOLOR"], 
+			showborders=this.conf["SHOWBORDERS"],
+			cellcolor=this.conf["CELLCOLOR"], actcolor=this.conf["ACTCOLOR"],
 			trackcolor=this.conf["TRACKCOLOR"],
 			nrcells=this.conf["NRCELLS"],cellkind
 
@@ -278,9 +279,9 @@ simulation.prototype = {
 	},
 
 	reset : function(){
-		
 
-		// remove all cells from the grid, but keep stroma		
+
+		// remove all cells from the grid, but keep stroma
 		var cellpix1 = this.C.cellpixelstype, cellpix = Object.keys( cellpix1 ), i
 		for( i = 0; i < cellpix.length; i++ ){
 			if( cellpix1[i] != 0 ){

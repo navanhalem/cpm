@@ -25,14 +25,16 @@ var field_size = parseInt(process.argv[4]) || 200
 var kera_cells_factor = (field_size*field_size)/(200*200)
 var max_CTL = 100*( (field_size*field_size) / (600*600) )
 var chemotaxis = parseInt(process.argv[5]) || 30
-var infectionStart = parseInt(process.argv[6]) || 0.1
+var infectionArea = parseFloat(process.argv[6]) || 0.1
+var entryBias = parseFloat(process.argv[7]) || 0
 
 function initialize(){
 	Cset = CsetChemotaxis
 	Cset.conf["LAMBDA_CHEMOTAXIS"][1] = chemotaxis
 	C = new CPMchemotaxis( Cset.ndim, {x:field_size,y:field_size}, Cset.conf)
+	C.entryBias = entryBias
 	C.maxTCells = max_CTL
-	C.infectionStart = infectionStart
+	C.infectionArea = infectionArea
 	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
 	Cimgradient = new BGCanvas( C, {zoom:zoom, wrap:wrap} )
 
@@ -63,6 +65,9 @@ function step(){
 	C.produceChemokine()
 	C.updateValues()
 	C.removeChemokine()
+
+	// Cimgradient.drawChemokineGradientFromList( "ffffff" )
+	// Cimgradient.drawChemokineGradientFromList( "0061ff" )
 
 	if( sim.time+1 < sim.runtime ){
 		step()

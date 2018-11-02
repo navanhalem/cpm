@@ -1,4 +1,4 @@
-/* This extends the CPM from CPM.js with a chemotaxis module. 
+/* This extends the CPM from CPM.js with a chemotaxis module.
 Can be used for two- or three-dimensional simulations, but visualization
 is currently supported only in 2D. Usable from browser and node.
 */
@@ -6,7 +6,7 @@ is currently supported only in 2D. Usable from browser and node.
 
 /* ------------------ CHEMOTAXIS --------------------------------------- */
 if( typeof CPM == "undefined" ){
-	CPM = require("./CPM.js" )	
+	CPM = require("./CPM.js" )
 }
 
 class CPMchemotaxis extends CPM {
@@ -33,7 +33,8 @@ class CPMchemotaxis extends CPM {
 			  this.values_to_add[i][j] = 0
 			}
 		}
-		this.D = 24.8 * 0.01//0000000001
+		this.entryBias = 0
+		this.D = 24.8 * 0.000000000001
 	}
 
 	produceChemokine () {
@@ -49,7 +50,7 @@ class CPMchemotaxis extends CPM {
 	removeChemokine () {
 		for (var x = 0; x < this.size; x++) {
 	    for (var y = 0; y < this.size; y++) {
-					this.chemokinelevel[x][y] *= .85
+					this.chemokinelevel[x][y] *= .95
 			}
 		}
 	}
@@ -69,7 +70,6 @@ class CPMchemotaxis extends CPM {
 	    x_new += this.size
 	  }
 	  let J = -this.D * (this.chemokinelevel[x][y] - this.chemokinelevel[x_new][y_new])
-	  J *= 1/8
 	  this.values_to_add[x][y] += J
 	  this.values_to_add[x_new][y_new] -= J
 	}
@@ -108,7 +108,7 @@ class CPMchemotaxis extends CPM {
 		}
 		return r/Math.sqrt(norm1)/Math.sqrt(norm2)
 	}
-	
+
 	/* To bias a copy attempt p1 -> p2 in the direction of vector 'dir'.
 	This implements a linear gradient rather than a radial one as with pointAttractor. */
 	linAttractor ( p1, p2, dir ){
@@ -125,6 +125,7 @@ class CPMchemotaxis extends CPM {
 			norm1 += d1*d1
 			norm2 += d2*d2
 		}
+		if ( norm2 == 0 ) { return 0 }
 		return r/Math.sqrt(norm1)/Math.sqrt(norm2)
 	}
 
@@ -142,6 +143,18 @@ class CPMchemotaxis extends CPM {
 		}
 	}
 
+	computeGradient ( source, chemokinelevel ) {
+		let gradient = [0, 0]
+		for ( let i = -1; i < 2; i++ ) {
+			for ( let j = -1; j < 2; j++ ) {
+				//gradient is - for all dimensions - the sum of the directions*chemokine_level of all neighbors
+				gradient[0] += i * (chemokinelevel[(source[0]+i)%(this.field_size.x-1)+1][(source[1]+j)%(this.field_size.x-1)+1] - chemokinelevel[source[0]][source[1]])
+				gradient[1] += j * (chemokinelevel[(source[0]+i)%(this.field_size.x-1)+1][(source[1]+j)%(this.field_size.x-1)+1] - chemokinelevel[source[0]][source[1]])
+			}
+		}
+		return gradient
+	}
+
 	deltaHchemotaxis ( sourcei, targeti, src_type, tgt_type ){
 		const gradienttype = this.conf["GRADIENT_TYPE"]
 		const gradientvec = this.conf["GRADIENT_DIRECTION"]
@@ -154,9 +167,10 @@ class CPMchemotaxis extends CPM {
 		} else if( gradienttype == "grid" ){
 			bias = this.gridAttractor( this.i2p( sourcei ), this.i2p( targeti ), gradientvec )
 		} else if( gradienttype == "custom" ){
-			bias = this.customAttractor( this.i2p(sourcei), this.i2p(targeti), this.chemokinelevel )
+			let gradientvec2 = this.computeGradient( this.i2p(sourcei), this.chemokinelevel )
+			bias = this.linAttractor( this.i2p(sourcei), this.i2p(targeti), gradientvec2 )
 		// } else if( gradienttype == "custom" ){
-		// 	bias = gradientvec( this.i2p( sourcei ), this.i2p( targeti ), this )
+		// 	bias = this.customAttractor( this.i2p( sourcei ), this.i2p( targeti ), this.chemokinelevel )
 		}  else {
 			throw("Unknown GRADIENT_TYPE. Please choose 'linear', 'radial', 'grid', or 'custom'." )
 		}
@@ -179,4 +193,3 @@ class CPMchemotaxis extends CPM {
 if( typeof module !== "undefined" ){
 	module.exports = CPMchemotaxis
 }
-

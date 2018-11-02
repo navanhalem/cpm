@@ -24,10 +24,21 @@ var names = {
 	LAMBDA_P : "&lambda;<sub>P,tissue</sub>"
 }
 
+var runtime = 1000
+var field_size = 300
+var kera_cells_factor = (field_size*field_size)/(200*200)
+var max_CTL = 100*( (field_size*field_size) / (600*600) )
+var chemotaxis = 30
+var infectionArea = 0.20
+var entryBias = 0
+
 function initialize(){
-	// Cset.conf.LAMBDA_ACT[1]=400
 	Cset = CsetChemotaxis
-	C = new CPMchemotaxis( Cset.ndim, Cset.field_size, Cset.conf)
+	Cset.conf["LAMBDA_CHEMOTAXIS"][1] = chemotaxis
+	C = new CPMchemotaxis( Cset.ndim, {x:field_size,y:field_size}, Cset.conf)
+	C.entryBias = entryBias
+	C.maxTCells = max_CTL
+	C.infectionArea = infectionArea
 	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
 	Cimgradient = new BGCanvas( C, {zoom:zoom, wrap:wrap} )
 
@@ -41,6 +52,8 @@ function initialize(){
  		}
 	//simsettings["CANVASCOLOR"] = "eaecef"
 
+	simsettings["RUNTIME"] = runtime
+	simsettings["NRCELLS"][1] *= kera_cells_factor
 	sim = new simulation( C, Cim, Cs, simsettings, Ct )
 
 	sim.initialize()
@@ -56,15 +69,18 @@ function step(){
 		sim.timestep()
 	}
 
+
+
+
 	sim.drawCanvas()
 	C.produceChemokine()
 	C.updateValues()
 	C.removeChemokine()
-	// if(sim.time%3 == 0){
-	// 	Cimgradient.drawChemokineGradientFromList( "ffffff" )
-	// 	Cimgradient.drawChemokineGradientFromList( "0061ff" )
-	// 	Cim.ctx.drawImage( Cimgradient.el,0,0)
-	// }
+	if(sim.time%2 == 0){
+		Cimgradient.drawChemokineGradientFromList( "ffffff" )
+		Cimgradient.drawChemokineGradientFromList( "0061ff" )
+		Cim.ctx.drawImage( Cimgradient.el,0,0)
+	}
 
 	// Cim.writePNG("output/" + sim.time + ".png")
 
