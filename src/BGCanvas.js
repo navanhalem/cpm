@@ -138,14 +138,13 @@ BGCanvas.prototype = {
 				// Color the chemokine
 				else {
 
-					alpha = Math.log10(this.C.chemokinelevel[i][j])/4
-					if (alpha > 0.00000001) {
-						// this.setopacity( (alpha + 8)/12 )
-						this.setopacity(alpha)
-					} else {
-						this.setopacity(0)//this.C.chemokinelevel[i][j])
+					// alpha =
+					if (this.C.chemokinelevel[i][j] > 1){
+						this.setopacity(Math.log10(this.C.chemokinelevel[i][j])/5)
 					}
-
+					else {
+						this.setopacity(0)
+					}
 				}
 				this.pxf( [i,j] )
 			}

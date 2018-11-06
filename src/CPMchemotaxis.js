@@ -34,7 +34,7 @@ class CPMchemotaxis extends CPM {
 			}
 		}
 		this.entryBias = 0
-		this.D = 24.8 * 0.000000000001
+		this.D = 24.8 * 0.0010000000001
 	}
 
 	produceChemokine () {
@@ -50,7 +50,7 @@ class CPMchemotaxis extends CPM {
 	removeChemokine () {
 		for (var x = 0; x < this.size; x++) {
 	    for (var y = 0; y < this.size; y++) {
-					this.chemokinelevel[x][y] *= .95
+					this.chemokinelevel[x][y] *= .9985
 			}
 		}
 	}
@@ -78,10 +78,11 @@ class CPMchemotaxis extends CPM {
 	  this.clearDatagrid()
 		for (var x = 0; x < this.size; x++) {
 	    for (var y = 0; y < this.size; y++) {
-	      this.flow(x, y, x+1, y)    //flow east
-	      this.flow(x, y, x+1, y+1)  //flow south-east
-	      this.flow(x, y, x, y+1)    //flow south
-	      this.flow(x, y, x-1, y+1)  //flow south-west
+				this.values_to_add[x][y] += this.D * (this.chemokinelevel[(x+1+this.size)%this.size][y] +
+				 														this.chemokinelevel[x][(y+1+this.size)%this.size] +
+																		this.chemokinelevel[(x-1+this.size)%this.size][y] +
+																		this.chemokinelevel[x][(y-1+this.size)%this.size] -
+																		4*this.chemokinelevel[x][y])
 	    }
 	  }
 		for (var x = 0; x < this.size; x++) {
