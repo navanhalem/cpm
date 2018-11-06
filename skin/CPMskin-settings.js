@@ -2,7 +2,7 @@
 	var simsettings = {
 		SIMTYPE : "2D",
 		NRCELLS : [0,280],
-		BURNIN : 0,
+		BURNIN : 500,
 		RUNTIME : 12000,
 		CANVASCOLOR : "FFFFFF",
 		STROMACOLOR : "AAAAAA",

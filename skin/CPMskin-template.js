@@ -21,7 +21,7 @@ var CsetChemotaxis = {
 	conf : {LAMBDA_CHEMOTAXIS : [0,700,0],
 		LAMBDA_CONNECTIVITY : [0,0,0],
 		LAMBDA_P : [0,2,2],
-		LAMBDA_V : [0,30,30],
+		LAMBDA_V : [0,50,50],
 		LAMBDA_ACT : [0,20,0],
 		MAX_ACT : [0,1000,0],
 		P : [0,125,145],

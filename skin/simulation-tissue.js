@@ -25,6 +25,7 @@ function simulation( C, Cim, Cs, conf, Ct  ){
 	// to track the time of the actual simulation (no burnin)
 	this.time = 0
 	this.borderthreshold = 30
+	this.Tcell_infection_borders = []
 }
 
 simulation.prototype = {
@@ -71,12 +72,12 @@ simulation.prototype = {
 
 	},
 
-	getCellsToAffect : function( affectors, target ){
+	getCellsToAffect : function( affectors, targetmin, targetmax ){
 		var cellsToAffect = {}
 		for ( i = 0; i < affectors.length; i++ ) {
 			infectedCellNeighbors = this.Cs.cellNeighborsList(affectors[i])[1]
 			for (const [key, value] of Object.entries(this.Cs.cellNeighborsList(affectors[i])[1])) {
-				if (this.C.infection[key] == target){
+				if (this.C.infection[key] <= targetmax && this.C.infection[key] >= targetmin){
 					if ( key in cellsToAffect ){
 						cellsToAffect[key] = cellsToAffect[key] + value
 					}
@@ -101,11 +102,12 @@ simulation.prototype = {
 
 	kill : function(){
 		var killers = this.findCells(-1)
-		var infectedNeighbors = this.getCellsToAffect( killers, this.C.maxInfection )
+		var infectedNeighbors = this.getCellsToAffect( killers, 1, this.C.maxInfection )
 
 		for (const [key, value] of Object.entries(infectedNeighbors)){
 			if (this.C.killing[key] < this.C.maxKilling){
 				this.C.killing[key] = this.C.killing[key] + value
+				this.Tcell_infection_borders.push(value)
 				if(this.C.killing[key] >= this.C.maxKilling){
 					this.C.killing[key] = this.C.maxKilling
 					this.C.infection[key] = -2
@@ -116,7 +118,7 @@ simulation.prototype = {
 
 	infectOthers : function(){
 		var infected = this.findCells(this.C.maxInfection)
-		var skinNeighbors = this.getCellsToAffect( infected, 0 )
+		var skinNeighbors = this.getCellsToAffect( infected, 0, 0 )
 
 		for (const [key, value] of Object.entries(skinNeighbors)){
 			let rand = Math.random()
