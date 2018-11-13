@@ -58,8 +58,10 @@ function step(){
 		if (sim.time % savetime == 0) {
 			console.log(sim.time)
 			Cim.writePNG("output/" + sim.time + ".png")
-			this.fs.writeFileSync("output/" + sim.time + "G.png", Cimgradient.el.toBuffer())
+			// this.fs.writeFileSync("output/" + sim.time + "G.png", Cimgradient.el.toBuffer())
 		}
+
+		// Cs.centroids( false, sim.findCells(-1) )
 
 		for( var i = 0; i < 1; i++ ){
 			sim.timestep()
@@ -70,6 +72,25 @@ function step(){
 		C.updateValues()
 		C.removeChemokine()
 
+		//when the infection is cleared, print the time in hours and the tissue damage in nr of cells
+		var tissuedamage = 0
+		var infection = false
+		for (let i = 0; i < C.t2k.length; i ++) {
+			if (C.t2k[i] == 2){
+				if(C.infection[i] == -2) {
+					tissuedamage += 1
+				}
+				if(C.infection[i] > 0){
+					tissuedamage += 1
+					infection = true
+				}
+			}
+		}
+		if(infection == false) {
+			// console.log(tissuedamage, sim.time/25/60)
+		}
+
+
 		Cimgradient.drawChemokineGradientFromList( "ffffff" )
 		Cimgradient.drawChemokineGradientFromList( "0061ff" )
 	}
@@ -78,15 +99,15 @@ function step(){
 
 	 const fs = require('fs');
 	 for ( i in sim.Tcell_infection_borders ) {
-		 console.log(sim.Tcell_infection_borders[i])
+		 // console.log(sim.Tcell_infection_borders[i])
 	 }
 	 // write to a new file named values.txt
-	 fs.writeFile('values.txt', sim.Tcell_infection_borders.toString(), (err) => {
-		 // throws an error, you could also catch it here
-		 if (err) throw err;
-		 // success case, the file was saved
-		 console.log('array saved!');
-	 })
+	 // fs.writeFile('values.txt', sim.Tcell_infection_borders.toString(), (err) => {
+		//  // throws an error, you could also catch it here
+		//  if (err) throw err;
+		//  // success case, the file was saved
+		//  // console.log('array saved!');
+	 // })
 
 }
 

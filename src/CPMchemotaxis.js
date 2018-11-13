@@ -34,7 +34,8 @@ class CPMchemotaxis extends CPM {
 			}
 		}
 		this.entryBias = 0
-		this.D = 24.8 * 0.0010000000001
+		this.entryBiasStrength = 0.97
+		this.D = 24.8 * Math.pow(10, -4)
 	}
 
 	produceChemokine () {
@@ -45,6 +46,13 @@ class CPMchemotaxis extends CPM {
 				}
 			}
 		}
+		// for (var x = 0; x < this.size; x++) {
+	  //   for (var y = 0; y < this.size; y++) {
+		// 		if (Math.sqrt(Math.pow(100-x,2) + Math.pow(100-y, 2)) < 15) {
+		// 			this.chemokinelevel[x][y] += 100
+		// 		}
+		// 	}
+		// }
 	}
 
 	removeChemokine () {

@@ -107,7 +107,7 @@ simulation.prototype = {
 		for (const [key, value] of Object.entries(infectedNeighbors)){
 			if (this.C.killing[key] < this.C.maxKilling){
 				this.C.killing[key] = this.C.killing[key] + value
-				this.Tcell_infection_borders.push(value)
+				// this.Tcell_infection_borders.push(value)
 				if(this.C.killing[key] >= this.C.maxKilling){
 					this.C.killing[key] = this.C.maxKilling
 					this.C.infection[key] = -2
@@ -151,6 +151,25 @@ simulation.prototype = {
 		this.C.infection[maxKey] = this.C.infection[cell_idToReplace]
 	},
 
+	biasedEntry : function() {
+		let xpos = Math.floor( Math.random()*( this.C.field_size.x ) )
+		let ypos = Math.floor( Math.random()*( this.C.field_size.y ) )
+		let maxConcentration = Math.max.apply(null, this.C.chemokinelevel.map(function(row){ return Math.max.apply(Math, row)}))
+	  let sumConcentrations =  this.C.chemokinelevel.reduce(function(a,b) { return a.concat(b) }).reduce(function(a,b) { return a + b })
+
+	  let maxProb = maxConcentration/sumConcentrations
+		let thisProb = this.C.chemokinelevel[xpos][ypos]/sumConcentrations
+		var thisRealProb = (thisProb/maxProb)*this.C.entryBiasStrength + (1-this.C.entryBiasStrength)
+
+		while ( Math.random() > thisRealProb ) {
+			xpos = Math.floor( Math.random()*( this.C.field_size.x ) )
+			ypos = Math.floor( Math.random()*( this.C.field_size.y ) )
+			thisProb = this.C.chemokinelevel[xpos][ypos]/sumConcentrations
+			thisRealProb = (thisProb/maxProb)*this.C.entryBiasStrength + (1-this.C.entryBiasStrength)
+		}
+		return [xpos, ypos]
+	},
+
 	addTCell : function() {
 		var cell_idToReplace = -1
 		typeToReplace = 1
@@ -158,11 +177,9 @@ simulation.prototype = {
 			let x = Math.floor( Math.random()*( this.C.field_size.x ) )
 			let y = Math.floor( Math.random()*( this.C.field_size.y ) )
 			if ( this.C.entryBias == 1 ) {
-				while ( Math.random()*800 > this.C.chemokinelevel[x][y]+300 ) {
-					x = Math.floor( Math.random()*( this.C.field_size.x ) )
-					y = Math.floor( Math.random()*( this.C.field_size.y ) )
-					// console.log(x, y)
-				}
+				let xy = this.biasedEntry()
+				x = xy[0]
+				y = xy[1]
 			}
 			cell_idToReplace = this.C.pixt([x, y])
 			typeToReplace = this.C.cellKind(cell_idToReplace)
