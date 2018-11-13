@@ -1044,6 +1044,8 @@ class CPM {
 		if (infected == true) {
 			this.infection[newid] = this.maxInfection
 			this.killing[newid] = 0
+			this.setCellKind( newid, 3 )
+			return newid
 		}
 		this.setCellKind( newid, kind )
 		return newid

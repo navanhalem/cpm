@@ -212,7 +212,7 @@ CPMCanvas.prototype = {
 		for( i = 0 ; i < cst.length ; i ++ ){
 			if( this.C.cellKind(this.C.cellpixelstype[cst[i]]) == kind ){
 				// If cellkind == 2 draw between gray and red depending on how infected the cell is
-				if (kind == 2) {
+				if (kind == 2 || kind == 3 || kind == 4) {
 					cell_id = this.C.pixti(cst[i])
 					if (this.C.killing[cell_id] == this.C.maxKilling) {
 						this.col( "000000" )

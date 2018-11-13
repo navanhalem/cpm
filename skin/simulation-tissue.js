@@ -90,10 +90,10 @@ simulation.prototype = {
 		return cellsToAffect
 	},
 
-	findCells : function(infectionLevel){
+	findCells : function(infectionLevelMin, infectionLevelMax){
 		var cells = []
 		for( i = 0; i < this.C.t2k.length; i++ ) {
-			if( this.C.infection[i] == infectionLevel ) {
+			if( this.C.infection[i] >= infectionLevelMin  && this.C.infection[i] <= infectionLevelMax ) {
 				cells.push(i)
 			}
 		}
@@ -101,7 +101,7 @@ simulation.prototype = {
 	},
 
 	kill : function(){
-		var killers = this.findCells(-1)
+		var killers = this.findCells(-1, -1)
 		var infectedNeighbors = this.getCellsToAffect( killers, 1, this.C.maxInfection )
 
 		for (const [key, value] of Object.entries(infectedNeighbors)){
@@ -111,19 +111,21 @@ simulation.prototype = {
 				if(this.C.killing[key] >= this.C.maxKilling){
 					this.C.killing[key] = this.C.maxKilling
 					this.C.infection[key] = -2
+					this.C.setCellKind(key, 4)
 				}
 			}
 		}
 	},
 
 	infectOthers : function(){
-		var infected = this.findCells(this.C.maxInfection)
+		var infected = this.findCells(1, this.C.maxInfection)
 		var skinNeighbors = this.getCellsToAffect( infected, 0, 0 )
 
 		for (const [key, value] of Object.entries(skinNeighbors)){
 			let rand = Math.random()
 			if (rand < value * 0.00005){
 				this.C.infection[key] = 1
+				this.C.setCellKind(key, 3)
 			}
 		}
 	},
@@ -138,7 +140,7 @@ simulation.prototype = {
 
 	replaceInfectionBorderCell : function(cell_idToReplace){
 		// replace border cell with most infected neighbors with this cell
-		var skinNeighbors = this.getCellsToAffect( this.findCells(this.C.maxInfection), 0 )
+		var skinNeighbors = this.getCellsToAffect( this.findCells(1, this.C.maxInfection), 0, 0 )
 		var maxKey = -1
 		var maxVal = -1
 		for (const [key, value] of Object.entries(skinNeighbors)){
@@ -149,6 +151,7 @@ simulation.prototype = {
 		}
 		this.C.killing[maxKey] = this.C.killing[cell_idToReplace]
 		this.C.infection[maxKey] = this.C.infection[cell_idToReplace]
+		this.C.setCellKind(maxKey, 3)
 	},
 
 	biasedEntry : function() {
