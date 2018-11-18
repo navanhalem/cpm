@@ -58,7 +58,7 @@ class CPMchemotaxis extends CPM {
 	removeChemokine () {
 		for (var x = 0; x < this.size; x++) {
 	    for (var y = 0; y < this.size; y++) {
-					this.chemokinelevel[x][y] *= .9985
+					this.chemokinelevel[x][y] *= .985
 			}
 		}
 	}
@@ -143,15 +143,6 @@ class CPMchemotaxis extends CPM {
 		return dir( p2 ) - dir( p1 )
 	}
 
-	/* This computes the gradient based on a given function evaluated at the two target points for custom gradient. */
-	customAttractor ( source, target, chemokinelevel ){
-		if( chemokinelevel[source[0]][source[1]] < chemokinelevel[target[0]][target[1]] ) {
-			return 1
-		} else {
-			return -1
-		}
-	}
-
 	computeGradient ( source, chemokinelevel ) {
 		let gradient = [0, 0]
 		for ( let i = -1; i < 2; i++ ) {
@@ -178,8 +169,6 @@ class CPMchemotaxis extends CPM {
 		} else if( gradienttype == "custom" ){
 			let gradientvec2 = this.computeGradient( this.i2p(sourcei), this.chemokinelevel )
 			bias = this.linAttractor( this.i2p(sourcei), this.i2p(targeti), gradientvec2 )
-		// } else if( gradienttype == "custom" ){
-		// 	bias = this.customAttractor( this.i2p( sourcei ), this.i2p( targeti ), this.chemokinelevel )
 		}  else {
 			throw("Unknown GRADIENT_TYPE. Please choose 'linear', 'radial', 'grid', or 'custom'." )
 		}

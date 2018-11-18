@@ -72,22 +72,32 @@ simulation.prototype = {
 
 	},
 
-	getCellsToAffect : function( affectors, targetmin, targetmax ){
+	getCellsToAffect : function( affectors, targetmin, targetmax, value ){
 		var cellsToAffect = {}
+		var cellsToAffectNr = {}
 		for ( i = 0; i < affectors.length; i++ ) {
 			infectedCellNeighbors = this.Cs.cellNeighborsList(affectors[i])[1]
 			for (const [key, value] of Object.entries(this.Cs.cellNeighborsList(affectors[i])[1])) {
 				if (this.C.infection[key] <= targetmax && this.C.infection[key] >= targetmin){
 					if ( key in cellsToAffect ){
 						cellsToAffect[key] = cellsToAffect[key] + value
+						cellsToAffectNr[key] = cellsToAffectNr[key] + 1
 					}
 					else {
 						cellsToAffect[key] = value
+						cellsToAffectNr[key] = 1
 					}
+					// if (targetmax == this.C.maxInfection){
+					// 	console.log(value)
+					// }
 				}
 			}
 		}
-		return cellsToAffect
+		if (value) {
+			return cellsToAffect
+		} else {
+			return cellsToAffectNr
+		}
 	},
 
 	findCells : function(infectionLevelMin, infectionLevelMax){
@@ -102,24 +112,30 @@ simulation.prototype = {
 
 	kill : function(){
 		var killers = this.findCells(-1, -1)
-		var infectedNeighbors = this.getCellsToAffect( killers, 1, this.C.maxInfection )
+		var infectedNeighbors = this.getCellsToAffect( killers, 1, this.C.maxInfection, true )
 
 		for (const [key, value] of Object.entries(infectedNeighbors)){
-			if (this.C.killing[key] < this.C.maxKilling){
-				this.C.killing[key] = this.C.killing[key] + value
-				// this.Tcell_infection_borders.push(value)
-				if(this.C.killing[key] >= this.C.maxKilling){
-					this.C.killing[key] = this.C.maxKilling
-					this.C.infection[key] = -2
-					this.C.setCellKind(key, 4)
-				}
+			let rand = Math.random()
+			if (rand < value * (1/this.C.maxKilling) ){
+				this.C.killing[key] = this.C.maxKilling
+				this.C.infection[key] = -2
+				this.C.setCellKind(key, 4)
 			}
+			// if (this.C.killing[key] < this.C.maxKilling){
+			// 	this.C.killing[key] = this.C.killing[key] + value
+			// 	//this.Tcell_infection_borders.push(value)
+			// 	if(this.C.killing[key] >= this.C.maxKilling){
+			// 		this.C.killing[key] = this.C.maxKilling
+			// 		this.C.infection[key] = -2
+			// 		this.C.setCellKind(key, 4)
+			// 	}
+			// }
 		}
 	},
 
 	infectOthers : function(){
 		var infected = this.findCells(1, this.C.maxInfection)
-		var skinNeighbors = this.getCellsToAffect( infected, 0, 0 )
+		var skinNeighbors = this.getCellsToAffect( infected, 0, 0, true )
 
 		for (const [key, value] of Object.entries(skinNeighbors)){
 			let rand = Math.random()
@@ -140,7 +156,7 @@ simulation.prototype = {
 
 	replaceInfectionBorderCell : function(cell_idToReplace){
 		// replace border cell with most infected neighbors with this cell
-		var skinNeighbors = this.getCellsToAffect( this.findCells(1, this.C.maxInfection), 0, 0 )
+		var skinNeighbors = this.getCellsToAffect( this.findCells(1, this.C.maxInfection), 0, 0, true )
 		var maxKey = -1
 		var maxVal = -1
 		for (const [key, value] of Object.entries(skinNeighbors)){
@@ -176,7 +192,7 @@ simulation.prototype = {
 	addTCell : function() {
 		var cell_idToReplace = -1
 		typeToReplace = 1
-		while ( typeToReplace != 2) {
+		while ( typeToReplace != 2 && typeToReplace != 3 ) {
 			let x = Math.floor( Math.random()*( this.C.field_size.x ) )
 			let y = Math.floor( Math.random()*( this.C.field_size.y ) )
 			if ( this.C.entryBias == 1 ) {
@@ -195,16 +211,36 @@ simulation.prototype = {
 		this.C.setCellKind(cell_idToReplace, 1)
 	},
 
+	changeCTLBehavior : function() {
+		let CTLs = this.findCells(-1, -1)
+		for(let i = 0; i < CTLs.length; i++) {
+			let neighbors = this.Cs.cellNeighborsList(CTLs[i])[0]
+			let infectedNeighbor = false
+			for(let j = 0; j < neighbors.length; j++) {
+				if(this.C.cellKind(neighbors[j]) == 3) {
+					infectedNeighbor = true
+				}
+			}
+			if(this.C.cellKind(CTLs[i]) == 1 && infectedNeighbor) {
+				this.C.setCellKind(CTLs[i], 5)
+			}
+			if(this.C.cellKind(CTLs[i]) == 5 && !infectedNeighbor) {
+				this.C.setCellKind(CTLs[i], 1)
+			}
+		}
+	},
+
 	// Update the grid and either draw it or print track output
 	timestep : function(){
 		// Update the grid with one MCS
 		this.kill()
 		this.infectOthers()
 		this.getMoreInfected()
-		if ((this.time + 1) % 20 == 0 && this.C.countCells(1) < this.C.maxTCells) {
+		if ((this.time + 1) % 20 == 0 && this.C.countCells(1) + this.C.countCells(5) < this.C.maxTCells) {
 			this.addTCell()
 		}
 		this.C.monteCarloStep()
+		this.changeCTLBehavior()
 		this.time++
 	},
 
