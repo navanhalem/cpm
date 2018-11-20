@@ -140,7 +140,7 @@ simulation.prototype = {
 
 		for (const [key, value] of Object.entries(skinNeighbors)){
 			let rand = Math.random()
-			if (rand < value * infectionChance){
+			if (rand < value * this.infectionChance){
 				this.C.infection[key] = 1
 				this.C.setCellKind(key, 3)
 			}
