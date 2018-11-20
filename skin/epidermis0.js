@@ -19,6 +19,7 @@ var names = {
 	LAMBDA_P : "&lambda;<sub>P,tissue</sub>"
 }
 
+const fs = require('fs')
 var runtime = parseInt(process.argv[2]) || 100
 var savetime = parseInt(process.argv[3]) || 1
 var field_size = parseInt(process.argv[4]) || 200
@@ -28,8 +29,10 @@ var chemotaxis = parseInt(process.argv[5]) || 0
 var infectionStart = parseFloat(process.argv[6]) || 0.1
 var entryBias = parseInt(process.argv[7]) || 0
 var killingTime = parseInt(process.argv[8]) || 15 //15, 30, 45, 60
-var avg_border_CTL_infection = 11.59
+var avg_border_CTL_infection = 30.46
 var simulationType = parseInt(process.argv[9]) || 1
+var infectionChance = parseFloat(process.argv[10]) || 1
+
 var report = true
 
 function initialize(){
@@ -45,7 +48,7 @@ function initialize(){
 	}
 	C = new CPMchemotaxis( Cset.ndim, {x:field_size,y:field_size}, Cset.conf)
 	C.entryBias = entryBias
-	C.maxTCells = max_CTL
+	C.maxTCells = 0//max_CTL
 	C.infectionStart = infectionStart
 	C.maxKilling = killingTime * 25 * avg_border_CTL_infection
 	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
@@ -58,9 +61,25 @@ function initialize(){
 	simsettings["NRCELLS"][1] *= kera_cells_factor
 	sim = new simulation( C, Cim, Cs, simsettings, Ct )
 	sim.initialize()
+	sim.infectionChance = infectionChance
+	seedInfection()
 	report = true
 	startSim()
 	step()
+}
+
+function seedInfection() {
+	let centroids = Cs.getCentroids()
+	for (let i = 0; i < centroids.length; i++) {
+		if(Math.sqrt(Math.pow((centroids[i].x - (field_size/2)), 2) + Math.pow((centroids[i].y - (field_size/2)), 2)) < (field_size*infectionStart)) {
+			C.infection[centroids[i].id] = C.maxInfection / 2
+			C.setCellKind(centroids[i].id, 3)
+		}
+	}
+}
+
+function logData() {
+	console.log(sim.time, chemotaxis, killingTime, entryBias, C.countCells(1), C.countCells(5), C.countCells(2), C.countCells(3), C.countCells(4) )
 }
 
 function reportResults(){
@@ -75,12 +94,12 @@ function reportResults(){
 		}
 	}
 	if(infection == false) {
-		console.log(chemotaxis, killingTime, entryBias, tissuedamage, sim.time/25/60)
+		// console.log(chemotaxis, killingTime, entryBias, tissuedamage, sim.time/25/60)
 		report = false
-		stopSim()
+		// stopSim()
 	}
 	if(sim.time == sim.runtime) {
-		console.log(chemotaxis, killingTime, entryBias, tissuedamage, sim.runtime/25/60 + 1)
+		// console.log(chemotaxis, killingTime, entryBias, tissuedamage, sim.runtime/25/60 + 1)
 		report = false
 	}
 }
@@ -90,19 +109,24 @@ function step(){
 
 	while ( sim.time <= sim.runtime && !sim.stop ) {
 
-		sim.timestep()
+		// if (sim.time % 25 == 0) {
+		// 	logData()
+		// }
 
+		sim.timestep()
 		sim.drawCanvas()
-		C.produceChemokine()
-		C.updateValues()
-		C.removeChemokine()
+		// C.produceChemokine()
+		// for(let i = 0; i < 25; i++) {
+		// 	C.updateValues()
+		// }
+		// C.removeChemokine()
 		// Cimgradient.drawChemokineGradientFromList( "ffffff" )
 		// Cimgradient.drawChemokineGradientFromList( "0061ff" )
 
 		if (sim.time % savetime == 0) {
 			console.log(sim.time)
-			Cim.writePNG("output/" + sim.time + ".png")
-			// this.fs.writeFileSync("output/" + sim.time + "G.png", Cimgradient.el.toBuffer())
+			Cim.writePNG("output/" + sim.time + "_" + infectionChance + ".png")
+			// fs.writeFileSync("output/" + sim.time + "_" + infectionchance + "G.png", Cimgradient.el.toBuffer())
 		}
 
 		//when the infection is cleared, print the time in hours and the tissue damage in nr of cells

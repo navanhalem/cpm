@@ -559,7 +559,7 @@ CPMStats.prototype = {
 			//get neighbouring pixels of borderpixel of cell
 			neighbours_of_borderpixel_cell = sim.C.neighi(cellborderpixels[cellpix])
 			//don't add a pixel in cell more than twice
-			added_to = []
+			// added_to = []
 			//loop over neighbouring pixels and store the parent cell if it is different from
 			//cell, add or increment the key corresponding to the neighbor in the dictionairy
 			for ( neighborpix = 0; neighborpix < neighbours_of_borderpixel_cell.length; neighborpix ++ ) {
@@ -568,15 +568,15 @@ CPMStats.prototype = {
 					if (!neigh_cell.includes(cell_id)) {
 						neigh_cell.push(cell_id)
 					}
-					if (!added_to.includes(cell_id)) {
+					// if (!added_to.includes(cell_id)) {
 						if (cell_id in neigh_cell_amountborder) {
 							neigh_cell_amountborder[cell_id] = neigh_cell_amountborder[cell_id]+1
 						}
 						else {
 							neigh_cell_amountborder[cell_id] = 1
 						}
-						added_to.push(cell_id)
-					}
+					// 	added_to.push(cell_id)
+					// }
 				}
 			}
 		}

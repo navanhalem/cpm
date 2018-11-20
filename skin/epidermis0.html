@@ -25,7 +25,7 @@ var names = {
 }
 
 var runtime = 1000
-var field_size = 300
+var field_size = 200
 var kera_cells_factor = (field_size*field_size)/(200*200)
 var max_CTL = 100*( (field_size*field_size) / (600*600) )
 var chemotaxis = 30
@@ -63,24 +63,19 @@ function initialize(){
 // Perform a step in the model
 function step(){
 
-	console.log(C.conf.GRADIENT_TYPE)
-
 	for( var i = 0; i < 1; i++ ){
 		sim.timestep()
 	}
-
-
-
 
 	sim.drawCanvas()
 	C.produceChemokine()
 	C.updateValues()
 	C.removeChemokine()
-	if(sim.time%2 == 0){
-		Cimgradient.drawChemokineGradientFromList( "ffffff" )
-		Cimgradient.drawChemokineGradientFromList( "0061ff" )
-		Cim.ctx.drawImage( Cimgradient.el,0,0)
-	}
+	// if(sim.time%2 == 0){
+	// 	Cimgradient.drawChemokineGradientFromList( "ffffff" )
+	// 	Cimgradient.drawChemokineGradientFromList( "0061ff" )
+	// 	Cim.ctx.drawImage( Cimgradient.el,0,0)
+	// }
 
 	// Cim.writePNG("output/" + sim.time + ".png")
 

@@ -1088,9 +1088,9 @@ class CPM {
 				// random position on the grid
 				p = [this.ran( 0, this.field_size.x-1 ),
 					this.ran( 0, this.field_size.y-1 )]
-				if ( kind == 2 ){
-					infected = this.changeIfCenter(p, this.field_size.x*this.infectionStart)
-				}
+				// if ( kind == 2 ){
+				// 	infected = this.changeIfCenter(p, this.field_size.x*this.infectionStart)
+				// }
 				if( this.ndim == 3 ){
 					p.push( this.ran( 0, this.field_size.z-1 ) )
 				} else {

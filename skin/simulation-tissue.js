@@ -26,6 +26,7 @@ function simulation( C, Cim, Cs, conf, Ct  ){
 	this.time = 0
 	this.borderthreshold = 30
 	this.Tcell_infection_borders = []
+	this.infectionChance = 0.000025
 }
 
 simulation.prototype = {
@@ -139,7 +140,7 @@ simulation.prototype = {
 
 		for (const [key, value] of Object.entries(skinNeighbors)){
 			let rand = Math.random()
-			if (rand < value * 0.00005){
+			if (rand < value * infectionChance){
 				this.C.infection[key] = 1
 				this.C.setCellKind(key, 3)
 			}
