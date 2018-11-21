@@ -58,7 +58,7 @@ class CPMchemotaxis extends CPM {
 	removeChemokine () {
 		for (var x = 0; x < this.size; x++) {
 	    for (var y = 0; y < this.size; y++) {
-					this.chemokinelevel[x][y] *= .95
+					this.chemokinelevel[x][y] *= .85
 			}
 		}
 	}

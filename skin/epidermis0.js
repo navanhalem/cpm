@@ -20,7 +20,7 @@ var names = {
 }
 
 const fs = require('fs')
-var runtime = parseInt(process.argv[2]) || 100
+var runtime = parseInt(process.argv[2]) || 1000
 var savetime = parseInt(process.argv[3]) || 1
 var field_size = parseInt(process.argv[4]) || 200
 var kera_cells_factor = (field_size*field_size)/(200*200)
@@ -31,7 +31,9 @@ var entryBias = parseInt(process.argv[7]) || 0
 var killingTime = parseInt(process.argv[8]) || 15 //15, 30, 45, 60
 var avg_border_CTL_infection = 30.46
 var simulationType = parseInt(process.argv[9]) || 1
-var infectionChance = parseFloat(process.argv[10]) || 1
+var infectionChance = parseFloat(process.argv[10]) || 0.000025
+var maxAct = parseInt(process.argv[11]) || 20
+var lAct = parseInt(process.argv[12]) || 1000
 
 var report = true
 
@@ -39,6 +41,10 @@ function initialize(){
 	Cset = CsetChemotaxis
 	Cset.conf["LAMBDA_CHEMOTAXIS"][1] = chemotaxis
 	Cset.conf["LAMBDA_CHEMOTAXIS"][5] = chemotaxis
+	Cset.conf["LAMBDA_ACT"][1] = lAct
+	Cset.conf["LAMBDA_ACT"][5] = lAct
+	Cset.conf["MAX_ACT"][1] = maxAct
+	Cset.conf["MAX_ACT"][5] = maxAct
 	if(simulationType == 2){
 		Cset.conf["LAMBDA_CHEMOTAXIS"][5] = 0
 		Cset.conf["LAMBDA_ACT"][5] = 0
@@ -48,7 +54,7 @@ function initialize(){
 	}
 	C = new CPMchemotaxis( Cset.ndim, {x:field_size,y:field_size}, Cset.conf)
 	C.entryBias = entryBias
-	C.maxTCells = 0//max_CTL
+	C.maxTCells = max_CTL
 	C.infectionStart = infectionStart
 	C.maxKilling = killingTime * 25 * avg_border_CTL_infection
 	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
@@ -115,23 +121,22 @@ function step(){
 
 		sim.timestep()
 		sim.drawCanvas()
-		// C.produceChemokine()
-		// for(let i = 0; i < 25; i++) {
-		// 	C.updateValues()
-		// }
-		// C.removeChemokine()
+		C.produceChemokine()
+		for(let i = 0; i < 10; i++) {
+			C.updateValues()
+		}
+		C.removeChemokine()
 		// Cimgradient.drawChemokineGradientFromList( "ffffff" )
 		// Cimgradient.drawChemokineGradientFromList( "0061ff" )
 
 		if (sim.time % savetime == 0) {
-			console.log(sim.time)
-			Cim.writePNG("output/" + sim.time + "_" + infectionChance + ".png")
-			// fs.writeFileSync("output/" + sim.time + "_" + infectionchance + "G.png", Cimgradient.el.toBuffer())
+			// console.log(sim.time)
+			Cim.writePNG("output/" + sim.time + ".png")
+			// fs.writeFileSync("output/" + sim.time + "G.png", Cimgradient.el.toBuffer())
 		}
 
 		//when the infection is cleared, print the time in hours and the tissue damage in nr of cells
 		if(report){
-			reportResults()
 		}
 	}
 
