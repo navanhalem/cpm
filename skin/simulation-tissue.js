@@ -27,6 +27,7 @@ function simulation( C, Cim, Cs, conf, Ct  ){
 	this.borderthreshold = 30
 	this.Tcell_infection_borders = []
 	this.infectionChance = 0.000025
+	this.avg_border_CTL_infection = 0
 }
 
 simulation.prototype = {
@@ -215,12 +216,16 @@ simulation.prototype = {
 	changeCTLBehavior : function() {
 		let CTLs = this.findCells(-1, -1)
 		for(let i = 0; i < CTLs.length; i++) {
-			let neighbors = this.Cs.cellNeighborsList(CTLs[i])[0]
+			let neighbors = this.Cs.cellNeighborsList(CTLs[i])
 			let infectedNeighbor = false
+			let border = 0
 			for(let j = 0; j < neighbors.length; j++) {
-				if(this.C.cellKind(neighbors[j]) == 3) {
-					infectedNeighbor = true
+				if(this.C.cellKind(neighbors[0][j]) == 3 ) {
+					border += neighbors[1][neighbors[0][j]]
 				}
+			}
+			if(border > this.avg_border_CTL_infection*(2/3)) {
+				infectedNeighbor = true
 			}
 			if(this.C.cellKind(CTLs[i]) == 1 && infectedNeighbor) {
 				this.C.setCellKind(CTLs[i], 5)

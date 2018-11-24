@@ -35,7 +35,7 @@ class CPMchemotaxis extends CPM {
 		}
 		this.entryBias = 0
 		this.entryBiasStrength = 0.97
-		this.D = 24.8 * Math.pow(10, -3)
+		this.D = 24.8 * Math.pow(10, -6)
 	}
 
 	produceChemokine () {

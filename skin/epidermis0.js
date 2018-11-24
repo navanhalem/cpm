@@ -68,6 +68,7 @@ function initialize(){
 	sim = new simulation( C, Cim, Cs, simsettings, Ct )
 	sim.initialize()
 	sim.infectionChance = infectionChance
+	sim.avg_border_CTL_infection = avg_border_CTL_infection
 	seedInfection()
 	report = true
 	startSim()
@@ -115,10 +116,6 @@ function step(){
 
 	while ( sim.time <= sim.runtime && !sim.stop ) {
 
-		// if (sim.time % 25 == 0) {
-		// 	logData()
-		// }
-
 		sim.timestep()
 		sim.drawCanvas()
 		C.produceChemokine()
@@ -130,30 +127,16 @@ function step(){
 		// Cimgradient.drawChemokineGradientFromList( "0061ff" )
 
 		if (sim.time % savetime == 0) {
-			// console.log(sim.time)
-			Cim.writePNG("output/" + sim.time + ".png")
+			console.log(simulationType, sim.time)
+			Cim.writePNG("output/" + sim.time + "_" + simulationType + ".png")
 			// fs.writeFileSync("output/" + sim.time + "G.png", Cimgradient.el.toBuffer())
 		}
 
-		//when the infection is cleared, print the time in hours and the tissue damage in nr of cells
+		//log data
 		if(report){
+			// logData()
 		}
 	}
-
-	// sim.Tcell_infection_borders
-
-	 // const fs = require('fs');
-	 // for ( i in sim.Tcell_infection_borders ) {
-		//  // console.log(sim.Tcell_infection_borders[i])
-	 // }
-	 // // write to a new file named values.txt
-	 // fs.writeFile('borders.txt', sim.Tcell_infection_borders.toString(), (err) => {
-		//  // throws an error, you could also catch it here
-		//  if (err) throw err;
-		//  // success case, the file was saved
-		//  // console.log('array saved!');
-	 // })
-
 }
 
 // For controlling the simulation
