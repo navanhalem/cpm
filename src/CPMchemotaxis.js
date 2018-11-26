@@ -35,7 +35,7 @@ class CPMchemotaxis extends CPM {
 		}
 		this.entryBias = 0
 		this.entryBiasStrength = 0.97
-		this.D = 24.8 * Math.pow(10, -6)
+		this.D = 36 * Math.pow(10, -3) //24.8 * Math.pow(10, -6)
 	}
 
 	produceChemokine () {
@@ -89,8 +89,12 @@ class CPMchemotaxis extends CPM {
 				this.values_to_add[x][y] += this.D * (this.chemokinelevel[(x+1+this.size)%this.size][y] +
 				 														this.chemokinelevel[x][(y+1+this.size)%this.size] +
 																		this.chemokinelevel[(x-1+this.size)%this.size][y] +
-																		this.chemokinelevel[x][(y-1+this.size)%this.size] -
-																		4*this.chemokinelevel[x][y])
+																		this.chemokinelevel[x][(y-1+this.size)%this.size] +
+																		this.chemokinelevel[(x-1+this.size)%this.size][(y-1+this.size)%this.size] +
+																		this.chemokinelevel[(x+1+this.size)%this.size][(y-1+this.size)%this.size] +
+																		this.chemokinelevel[(x-1+this.size)%this.size][(y+1+this.size)%this.size] +
+																		this.chemokinelevel[(x+1+this.size)%this.size][(y+1+this.size)%this.size] -
+																		(4+4*(1/Math.sqrt(1+1)))*this.chemokinelevel[x][y])
 	    }
 	  }
 		for (var x = 0; x < this.size; x++) {

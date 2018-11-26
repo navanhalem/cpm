@@ -118,11 +118,11 @@ function step(){
 
 		sim.timestep()
 		sim.drawCanvas()
-		C.produceChemokine()
 		for(let i = 0; i < 10; i++) {
+			C.produceChemokine()
 			C.updateValues()
+			C.removeChemokine()
 		}
-		C.removeChemokine()
 		// Cimgradient.drawChemokineGradientFromList( "ffffff" )
 		// Cimgradient.drawChemokineGradientFromList( "0061ff" )
 
