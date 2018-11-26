@@ -12,7 +12,7 @@ compare2 :
 compare3 :
 	node epidermis0.js 12000 10 600 50 0.025 0 30 3 0.000025 20 1000
 	ffmpeg -y -framerate 24 -i output/%d0_3.png -c:v libx264 -r 30 -pix_fmt yuv420p output/motile/motile50.mp4
-compare14:
+compare4:
 	node epidermis0.js 12000 10 600 700 0.025 0 30 1 0.000025 20 1000
 	ffmpeg -y -framerate 24 -i output/%d0_1.png -c:v libx264 -r 30 -pix_fmt yuv420p output/sensitive/sensitive700.mp4
 compare5 :
