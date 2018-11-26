@@ -4,25 +4,25 @@ all : output/vid0.000020 output/vid0.000025 output/vid0.000030 output/vid0.00003
 
 compare : compare1 compare2 compare3
 compare1 :
-	node epidermis0.js 5000 10 300 300 0.075 0 30 1 0.000025 20 1000
+	node epidermis0.js 6000 10 400 400 0.05 0 30 1 0.000025 20 1000
 	ffmpeg -y -framerate 24 -i output/%d0_1.png -c:v libx264 -r 30 -pix_fmt yuv420p output/sensitive/sensitive.mp4
 compare2 :
-	node epidermis0.js 5000 10 300 300 0.075 0 30 2 0.000025 20 1000
+	node epidermis0.js 6000 10 400 400 0.05 0 30 2 0.000025 20 1000
 	ffmpeg -y -framerate 24 -i output/%d0_2.png -c:v libx264 -r 30 -pix_fmt yuv420p output/arresting/arresting.mp4
 compare3 :
-	node epidermis0.js 5000 10 300 300 0.075 0 30 3 0.000025 20 1000
+	node epidermis0.js 6000 10 400 400 0.05 0 30 3 0.000025 20 1000
 	ffmpeg -y -framerate 24 -i output/%d0_3.png -c:v libx264 -r 30 -pix_fmt yuv420p output/motile/motile.mp4
 
 vids : output/vid.mp4 output/vidG.mp4
 
 output/vid.mp4 : output/10.png
-	ffmpeg -y -framerate 24 -i output/%d0.png -c:v libx264 -r 30 -pix_fmt yuv420p $@
+	ffmpeg -y -framerate 24 -i output/%d0_1.png -c:v libx264 -r 30 -pix_fmt yuv420p $@
 
 output/vidG.mp4 : output/10.png
-	ffmpeg -y -framerate 24 -i output/%d0G.png -c:v libx264 -r 30 -pix_fmt yuv420p $@
+	ffmpeg -y -framerate 24 -i output/%d0_1G.png -c:v libx264 -r 30 -pix_fmt yuv420p $@
 
 output/10.png : epidermis0.js
-	node $< 1500 10 200 300 0.125 0 30 1 0.000025
+	node $< 3000 10 200 300 0.125 0 30 1 0.000025 20 1000
 
 output/vid0.000020 : epidermis0.js
 	node $< 12000 10 600 700 0.05 0 30 1 0.000020
