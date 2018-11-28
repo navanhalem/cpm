@@ -75,6 +75,13 @@ BGCanvas.prototype = {
 
 	/* DRAWING FUNCTIONS ---------------------- */
 
+	nmod : function(x, N) {
+		return ((x % N) + N) % N;
+	},
+
+	t21 : function(x,y,N) {
+		return this.nmod(y,N)*N+this.nmod(x,N)
+	},
 
 	setopacity : function( alpha ){
 		this.ctx.globalAlpha = alpha
@@ -139,8 +146,8 @@ BGCanvas.prototype = {
 				else {
 
 					// alpha =
-					if (this.C.chemokinelevel[i][j] > 1){
-						this.setopacity(Math.log10(this.C.chemokinelevel[i][j])/5)
+					if (this.C.chemokinelevel.get([this.t21(i, j,this.C.size),0]) > 1){
+						this.setopacity(Math.log10(this.C.chemokinelevel.get([this.t21(i, j,this.C.size),0]))/5)
 					}
 					else {
 						this.setopacity(0)

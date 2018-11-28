@@ -9,6 +9,16 @@ if( typeof CPM == "undefined" ){
 	CPM = require("./CPM.js" )
 }
 
+var math = require("mathjs")
+
+function nmod(x, N) {
+	return ((x % N) + N) % N;
+}
+
+function t21(x,y,N){
+	return nmod(y,N)*N+nmod(x,N)
+}
+
 class CPMchemotaxis extends CPM {
 
 	constructor( ndim, field_size, conf ) {
@@ -19,30 +29,44 @@ class CPMchemotaxis extends CPM {
 			this.terms.push( "chemotaxis" )
 		}
 		this.size = field_size.x
-		this.chemokinelevel = []
-		for (var i = 0; i < this.size; i++) {
-		   this.chemokinelevel[i] = []
-		   for (var j = 0; j < this.size; j++) {
-		      this.chemokinelevel[i][j] = 0
-		   }
-		}
-		this.values_to_add = []
-		for (var i = 0; i < this.size; i++) {
-		  this.values_to_add[i] = []
-			for (var j = 0; j < this.size; j++) {
-			  this.values_to_add[i][j] = 0
-			}
-		}
+
 		this.entryBias = 0
 		this.entryBiasStrength = 0.97
-		this.D = 36 * Math.pow(10, -3) //24.8 * Math.pow(10, -6)
+
+		this.D = 6.2 * Math.pow(10, -5)
+		this.dx = .38/600//1 //pixel
+		this.dt = 60/25//1 //MCS
+		this.secretion = 100 //molecules per lattice site
+		this.decay = 0.15 //15% of the concentration decays
+
+		// prepare laplacian matrix
+		this.L = math.multiply( math.identity( this.size*this.size, this.size*this.size, 'sparse' ), -4 )
+		for( let x = 0 ; x < this.size ; x ++ ){
+			for( let y = 0 ; y < this.size; y ++ ){
+				let i = t21(x,y,this.size)
+				this.L.set([i,t21(nmod(x-1,this.size),y,this.size)],1)
+				this.L.set([i,t21(nmod(x+1,this.size),y,this.size)],1)
+				this.L.set([i,t21(x,nmod(y-1,this.size),this.size)],1)
+				this.L.set([i,t21(x,nmod(y+1,this.size),this.size)],1)
+			}
+		}
+
+		// scale matrix to diffusion coefficient & spatiotemporal step
+		this.Afirst = math.multiply( this.L, this.D * this.dt / this.dx / this.dx )
+		this.A = math.multiply( this.L, this.D * this.dt / this.dx / this.dx )
+		for ( let i = 1; i < 10; i++ ) {
+			this.A = math.multiply( this.A, this.Afirst )
+		}
+		this.chemokinelevel = math.zeros(this.size*this.size,1)
+
 	}
 
 	produceChemokine () {
 		for (var x = 0; x < this.size; x++) {
 	    for (var y = 0; y < this.size; y++) {
 				if (this.infection[this.pixt([x,y])] > 0) {
-					this.chemokinelevel[x][y] += 100
+					// this.chemokinelevel[x][y] += 100
+					this.chemokinelevel.set([t21(x,y,this.size),0], this.secretion * this.dt)
 				}
 			}
 		}
@@ -56,11 +80,12 @@ class CPMchemotaxis extends CPM {
 	}
 
 	removeChemokine () {
-		for (var x = 0; x < this.size; x++) {
-	    for (var y = 0; y < this.size; y++) {
-					this.chemokinelevel[x][y] *= .85
-			}
-		}
+		// for (var x = 0; x < this.size; x++) {
+	  //   for (var y = 0; y < this.size; y++) {
+		// 			this.chemokinelevel[x][y] *= .85
+		// 	}
+		// }
+		this.chemokinelevel = math.multiply( this.chemokinelevel, 1 - this.decay * this.dt )
 	}
 
 	clearDatagrid () {
@@ -83,25 +108,26 @@ class CPMchemotaxis extends CPM {
 	}
 
 	updateValues () {
-	  this.clearDatagrid()
-		for (var x = 0; x < this.size; x++) {
-	    for (var y = 0; y < this.size; y++) {
-				this.values_to_add[x][y] += this.D * (this.chemokinelevel[(x+1+this.size)%this.size][y] +
-				 														this.chemokinelevel[x][(y+1+this.size)%this.size] +
-																		this.chemokinelevel[(x-1+this.size)%this.size][y] +
-																		this.chemokinelevel[x][(y-1+this.size)%this.size] +
-																		this.chemokinelevel[(x-1+this.size)%this.size][(y-1+this.size)%this.size] +
-																		this.chemokinelevel[(x+1+this.size)%this.size][(y-1+this.size)%this.size] +
-																		this.chemokinelevel[(x-1+this.size)%this.size][(y+1+this.size)%this.size] +
-																		this.chemokinelevel[(x+1+this.size)%this.size][(y+1+this.size)%this.size] -
-																		(4+4*(1/Math.sqrt(1+1)))*this.chemokinelevel[x][y])
-	    }
-	  }
-		for (var x = 0; x < this.size; x++) {
-	    for (var y = 0; y < this.size; y++) {
-	      this.chemokinelevel[x][y] += this.values_to_add[x][y]
-	    }
-	  }
+	  // this.clearDatagrid()
+		// for (var x = 0; x < this.size; x++) {
+	  //   for (var y = 0; y < this.size; y++) {
+		// 		this.values_to_add[x][y] += this.D * (this.chemokinelevel[(x+1+this.size)%this.size][y] +
+		// 		 														this.chemokinelevel[x][(y+1+this.size)%this.size] +
+		// 																this.chemokinelevel[(x-1+this.size)%this.size][y] +
+		// 																this.chemokinelevel[x][(y-1+this.size)%this.size] +
+		// 																this.chemokinelevel[(x-1+this.size)%this.size][(y-1+this.size)%this.size] +
+		// 																this.chemokinelevel[(x+1+this.size)%this.size][(y-1+this.size)%this.size] +
+		// 																this.chemokinelevel[(x-1+this.size)%this.size][(y+1+this.size)%this.size] +
+		// 																this.chemokinelevel[(x+1+this.size)%this.size][(y+1+this.size)%this.size] -
+		// 																(4+4*(1/Math.sqrt(1+1)))*this.chemokinelevel[x][y])
+	  //   }
+	  // }
+		// for (var x = 0; x < this.size; x++) {
+	  //   for (var y = 0; y < this.size; y++) {
+	  //     this.chemokinelevel[x][y] += this.values_to_add[x][y]
+	  //   }
+	  // }
+		this.chemokinelevel = math.add( math.multiply( this.A, this.chemokinelevel ), this.chemokinelevel )
 	}
 
 	/*  To bias a copy attempt p1->p2 in the direction of target point pt.
@@ -152,8 +178,8 @@ class CPMchemotaxis extends CPM {
 		for ( let i = -1; i < 2; i++ ) {
 			for ( let j = -1; j < 2; j++ ) {
 				//gradient is - for all dimensions - the sum of the directions*chemokine_level of all neighbors
-				gradient[0] += i * (chemokinelevel[(source[0]+i)%(this.field_size.x-1)+1][(source[1]+j)%(this.field_size.x-1)+1] - chemokinelevel[source[0]][source[1]])
-				gradient[1] += j * (chemokinelevel[(source[0]+i)%(this.field_size.x-1)+1][(source[1]+j)%(this.field_size.x-1)+1] - chemokinelevel[source[0]][source[1]])
+				gradient[0] += i * (chemokinelevel.get([t21((source[0]+i)%(this.field_size.x-1)+1, (source[1]+j)%(this.field_size.x-1)+1,this.size),0]) - chemokinelevel.get([t21(source[0], source[1],this.size),0]))
+				gradient[1] += j * (chemokinelevel.get([t21((source[0]+i)%(this.field_size.x-1)+1, (source[1]+j)%(this.field_size.x-1)+1,this.size),0]) - chemokinelevel.get([t21(source[0], source[1],this.size),0]))
 			}
 		}
 		return gradient

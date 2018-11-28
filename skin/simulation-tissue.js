@@ -175,17 +175,17 @@ simulation.prototype = {
 	biasedEntry : function() {
 		let xpos = Math.floor( Math.random()*( this.C.field_size.x ) )
 		let ypos = Math.floor( Math.random()*( this.C.field_size.y ) )
-		let maxConcentration = Math.max.apply(null, this.C.chemokinelevel.map(function(row){ return Math.max.apply(Math, row)}))
-	  let sumConcentrations =  this.C.chemokinelevel.reduce(function(a,b) { return a.concat(b) }).reduce(function(a,b) { return a + b })
+		let maxConcentration = math.sum(this.C.chemokinelevel)
+	  let sumConcentrations =  math.sum(this.C.chemokinelevel)
 
 	  let maxProb = maxConcentration/sumConcentrations
-		let thisProb = this.C.chemokinelevel[xpos][ypos]/sumConcentrations
+		let thisProb = this.C.chemokinelevel.get([C.t21(xpos, ypos),0])/sumConcentrations
 		var thisRealProb = (thisProb/maxProb)*this.C.entryBiasStrength + (1-this.C.entryBiasStrength)
 
 		while ( Math.random() > thisRealProb ) {
 			xpos = Math.floor( Math.random()*( this.C.field_size.x ) )
 			ypos = Math.floor( Math.random()*( this.C.field_size.y ) )
-			thisProb = this.C.chemokinelevel[xpos][ypos]/sumConcentrations
+			thisProb = this.C.chemokinelevel.get([C.t21(xpos, ypos),0])/sumConcentrations
 			thisRealProb = (thisProb/maxProb)*this.C.entryBiasStrength + (1-this.C.entryBiasStrength)
 		}
 		return [xpos, ypos]

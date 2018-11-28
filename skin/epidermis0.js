@@ -123,13 +123,12 @@ function step(){
 			C.updateValues()
 			C.removeChemokine()
 		}
-		// Cimgradient.drawChemokineGradientFromList( "ffffff" )
-		// Cimgradient.drawChemokineGradientFromList( "0061ff" )
+		Cimgradient.drawChemokineGradientFromList( "0061ff" )
 
 		if (sim.time % savetime == 0) {
 			console.log(simulationType, sim.time)
 			Cim.writePNG("output/" + sim.time + "_" + simulationType + ".png")
-			// fs.writeFileSync("output/" + sim.time + "G.png", Cimgradient.el.toBuffer())
+			fs.writeFileSync("output/" + sim.time + "G.png", Cimgradient.el.toBuffer())
 		}
 
 		//log data
