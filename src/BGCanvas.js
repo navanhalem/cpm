@@ -146,8 +146,8 @@ BGCanvas.prototype = {
 				else {
 
 					// alpha =
-					if (this.C.chemokinelevel.get([this.t21(i, j,this.C.size),0]) > 1){
-						this.setopacity(Math.log10(this.C.chemokinelevel.get([this.t21(i, j,this.C.size),0]))/5)
+					if (this.C.chemokinereal.get([this.t21(i, j,this.C.size),0]) > 1){
+						this.setopacity(Math.log10(this.C.chemokinereal.get([this.t21(i, j,this.C.size),0]))/5)
 					}
 					else {
 						this.setopacity(0)

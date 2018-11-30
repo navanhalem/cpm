@@ -114,21 +114,26 @@ function reportResults(){
 // Perform a step in the model
 function step(){
 
+	let timestart = sim.time
+
 	while ( sim.time <= sim.runtime && !sim.stop ) {
 
 		sim.timestep()
 		sim.drawCanvas()
-		for(let i = 0; i < 10; i++) {
+		// if ( sim.time == timestart+1 ) {
 			C.produceChemokine()
+		// }
+		for(let i = 0; i < 10; i++) {
 			C.updateValues()
-			C.removeChemokine()
 		}
+		C.removeChemokine()
+		Cimgradient.drawChemokineGradientFromList( "ffffff" )
 		Cimgradient.drawChemokineGradientFromList( "0061ff" )
 
 		if (sim.time % savetime == 0) {
 			console.log(simulationType, sim.time)
 			Cim.writePNG("output/" + sim.time + "_" + simulationType + ".png")
-			fs.writeFileSync("output/" + sim.time + "G.png", Cimgradient.el.toBuffer())
+			fs.writeFileSync("output/" + sim.time + "_" + simulationType + "G.png", Cimgradient.el.toBuffer())
 		}
 
 		//log data

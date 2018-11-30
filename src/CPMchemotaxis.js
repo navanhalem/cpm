@@ -30,104 +30,95 @@ class CPMchemotaxis extends CPM {
 		}
 		this.size = field_size.x
 
-		this.entryBias = 0
-		this.entryBiasStrength = 0.97
-
-		this.D = 6.2 * Math.pow(10, -5)
-		this.dx = .38/600//1 //pixel
-		this.dt = 60/25//1 //MCS
+		// diffusion variables
+		this.resolutionDecrease = 8
+		this.newSize = this.size/this.resolutionDecrease
+		this.D = 6.2 * Math.pow(10, -5)/10 // 10 diffusion steps per MCS
+		this.dx = .38/(600/this.resolutionDecrease)//1 //pixel
+		this.dt = 60/60//1 //MCS
 		this.secretion = 100 //molecules per lattice site
 		this.decay = 0.15 //15% of the concentration decays
 
+		// biased entry variables
+		this.entryBias = 0
+		this.entryBiasStrength = 0.97
+
 		// prepare laplacian matrix
-		this.L = math.multiply( math.identity( this.size*this.size, this.size*this.size, 'sparse' ), -4 )
-		for( let x = 0 ; x < this.size ; x ++ ){
-			for( let y = 0 ; y < this.size; y ++ ){
-				let i = t21(x,y,this.size)
-				this.L.set([i,t21(nmod(x-1,this.size),y,this.size)],1)
-				this.L.set([i,t21(nmod(x+1,this.size),y,this.size)],1)
-				this.L.set([i,t21(x,nmod(y-1,this.size),this.size)],1)
-				this.L.set([i,t21(x,nmod(y+1,this.size),this.size)],1)
+		this.L = math.multiply( math.identity( (this.newSize)*(this.newSize), (this.newSize)*(this.newSize), 'sparse' ), -4 )
+		for( let x = 0 ; x < (this.newSize) ; x ++ ){
+			for( let y = 0 ; y < (this.newSize); y ++ ){
+				let i = t21(x,y,(this.newSize))
+				this.L.set([i,t21(nmod(x-1,(this.newSize)),y,(this.newSize))],1)
+				this.L.set([i,t21(nmod(x+1,(this.newSize)),y,(this.newSize))],1)
+				this.L.set([i,t21(x,nmod(y-1,(this.newSize)),(this.newSize))],1)
+				this.L.set([i,t21(x,nmod(y+1,(this.newSize)),(this.newSize))],1)
 			}
 		}
 
 		// scale matrix to diffusion coefficient & spatiotemporal step
-		this.Afirst = math.multiply( this.L, this.D * this.dt / this.dx / this.dx )
 		this.A = math.multiply( this.L, this.D * this.dt / this.dx / this.dx )
-		for ( let i = 1; i < 10; i++ ) {
-			this.A = math.multiply( this.A, this.Afirst )
-		}
-		this.chemokinelevel = math.zeros(this.size*this.size,1)
-
+		this.chemokinelevel = math.zeros((this.newSize)*(this.newSize),1)
+		this.chemokinereal = math.zeros(this.size*this.size,1)
 	}
 
 	produceChemokine () {
 		for (var x = 0; x < this.size; x++) {
 	    for (var y = 0; y < this.size; y++) {
 				if (this.infection[this.pixt([x,y])] > 0) {
-					// this.chemokinelevel[x][y] += 100
-					this.chemokinelevel.set([t21(x,y,this.size),0], this.secretion * this.dt)
+					// if ( x == this.size/2 && y == this.size/2) {
+						// console.log("chemokine placed")
+						let index = [t21(math.floor(x/this.resolutionDecrease),math.floor(y/this.resolutionDecrease),(this.newSize)),0]
+						this.chemokinelevel.set(index, this.chemokinelevel.get(index) + (this.secretion/(this.resolutionDecrease*this.resolutionDecrease)) * this.dt)
+						// console.log(math.sum(this.chemokinelevel))
+					// }
 				}
 			}
 		}
-		// for (var x = 0; x < this.size; x++) {
-	  //   for (var y = 0; y < this.size; y++) {
-		// 		if (Math.sqrt(Math.pow(100-x,2) + Math.pow(100-y, 2)) < 15) {
-		// 			this.chemokinelevel[x][y] += 100
-		// 		}
-		// 	}
-		// }
-	}
-
-	removeChemokine () {
-		// for (var x = 0; x < this.size; x++) {
-	  //   for (var y = 0; y < this.size; y++) {
-		// 			this.chemokinelevel[x][y] *= .85
-		// 	}
-		// }
-		this.chemokinelevel = math.multiply( this.chemokinelevel, 1 - this.decay * this.dt )
-	}
-
-	clearDatagrid () {
-	  for (var i = 0; i < this.size; i++) {
-	     for (var j = 0; j < this.size; j++) {
-	        this.values_to_add[i][j] = 0
-	     }
-	  }
-	}
-
-	flow (x, y, x_new, y_new) {
-	  x_new = x_new%this.size
-	  y_new = y_new%this.size
-	  if (x_new < 0) {
-	    x_new += this.size
-	  }
-	  let J = -this.D * (this.chemokinelevel[x][y] - this.chemokinelevel[x_new][y_new])
-	  this.values_to_add[x][y] += J
-	  this.values_to_add[x_new][y_new] -= J
 	}
 
 	updateValues () {
-	  // this.clearDatagrid()
-		// for (var x = 0; x < this.size; x++) {
-	  //   for (var y = 0; y < this.size; y++) {
-		// 		this.values_to_add[x][y] += this.D * (this.chemokinelevel[(x+1+this.size)%this.size][y] +
-		// 		 														this.chemokinelevel[x][(y+1+this.size)%this.size] +
-		// 																this.chemokinelevel[(x-1+this.size)%this.size][y] +
-		// 																this.chemokinelevel[x][(y-1+this.size)%this.size] +
-		// 																this.chemokinelevel[(x-1+this.size)%this.size][(y-1+this.size)%this.size] +
-		// 																this.chemokinelevel[(x+1+this.size)%this.size][(y-1+this.size)%this.size] +
-		// 																this.chemokinelevel[(x-1+this.size)%this.size][(y+1+this.size)%this.size] +
-		// 																this.chemokinelevel[(x+1+this.size)%this.size][(y+1+this.size)%this.size] -
-		// 																(4+4*(1/Math.sqrt(1+1)))*this.chemokinelevel[x][y])
-	  //   }
-	  // }
-		// for (var x = 0; x < this.size; x++) {
-	  //   for (var y = 0; y < this.size; y++) {
-	  //     this.chemokinelevel[x][y] += this.values_to_add[x][y]
-	  //   }
-	  // }
 		this.chemokinelevel = math.add( math.multiply( this.A, this.chemokinelevel ), this.chemokinelevel )
+	}
+
+	interpolate(x, y, c) {
+		let xplus = x + 0.001
+		let yplus = y + 0.001
+		// console.log(c.get([nmod(math.ceil(xplus),this.newSize), nmod(math.ceil(yplus),this.newSize)]),c.get([nmod(math.ceil(xplus),this.newSize), nmod(math.floor(yplus),this.newSize)]),c.get([nmod(math.floor(xplus),this.newSize), nmod(math.ceil(yplus),this.newSize)]),c.get([nmod(math.floor(xplus),this.newSize), nmod(math.floor(yplus),this.newSize)]))
+		let p1 = c.get([nmod(math.ceil(xplus),this.newSize), nmod(math.ceil(yplus),this.newSize)]) * Math.abs((x - math.floor(xplus)) * (y - math.floor(yplus)))
+		let p2 = c.get([nmod(math.ceil(xplus),this.newSize), nmod(math.floor(yplus),this.newSize)]) * Math.abs((x - math.floor(xplus)) * (math.ceil(yplus) - y))
+		let p3 = c.get([nmod(math.floor(xplus),this.newSize), nmod(math.ceil(yplus),this.newSize)]) * Math.abs((math.ceil(xplus) - x) * (y - math.floor(yplus)))
+		let p4 = c.get([nmod(math.floor(xplus),this.newSize), nmod(math.floor(yplus),this.newSize)]) * Math.abs((math.ceil(xplus) - x) * (math.ceil(yplus) - y))
+		// console.log(Math.abs((x - math.floor(xplus)) * (y - math.floor(yplus))), Math.abs((x - math.floor(xplus)) * (math.ceil(yplus) - y)), Math.abs((math.ceil(xplus) - x) * (y - math.floor(yplus))), Math.abs((math.ceil(xplus) - x) * (math.ceil(yplus) - y)))
+		// console.log(p1+p2+p3+p4)
+		return (p1+p2+p3+p4)
+	}
+
+	removeChemokine () {
+		let meandist = 0
+		let chemokineMatrix = math.reshape(this.chemokinelevel, [(this.newSize), (this.newSize)])
+		// for (var x = 0; x < this.newSize; x++) {
+	  //   for (var y = 0; y < this.newSize; y++) {
+		// 		let value = chemokineMatrix.get([x,y])
+		// 		meandist += value * (Math.sqrt(Math.pow(x-this.newSize/2, 2)+Math.pow(y-this.newSize/2, 2)))
+		// 	}
+		// }
+		this.chemokinereal = math.reshape(this.chemokinereal, [this.size, this.size])
+		for (var x = 0; x < this.size; x++) {
+	    for (var y = 0; y < this.size; y++) {
+				let scalex = x/this.resolutionDecrease
+				let scaley = y/this.resolutionDecrease
+				let value = this.interpolate(scalex, scaley, chemokineMatrix)
+				if(value * (Math.abs(x-this.size/2)+Math.abs(y-this.size/2)) > 0){
+					// console.log(value * (Math.abs(x-100)+Math.abs(y-100)))
+					// meandist += value * (Math.abs(x-this.size/2)+Math.abs(y-this.size/2))
+				}
+				this.chemokinereal.set([x,y], value)
+			}
+		}
+		// console.log(meandist)
+		this.chemokinereal = math.reshape(this.chemokinereal, [this.size*this.size, 1])
+		this.chemokinelevel = math.multiply(this.chemokinelevel, 1 - this.decay * this.dt)
+		this.chemokinelevel = math.reshape(this.chemokinelevel, [(this.newSize)*(this.newSize), 1])
 	}
 
 	/*  To bias a copy attempt p1->p2 in the direction of target point pt.
@@ -197,7 +188,7 @@ class CPMchemotaxis extends CPM {
 		} else if( gradienttype == "grid" ){
 			bias = this.gridAttractor( this.i2p( sourcei ), this.i2p( targeti ), gradientvec )
 		} else if( gradienttype == "custom" ){
-			let gradientvec2 = this.computeGradient( this.i2p(sourcei), this.chemokinelevel )
+			let gradientvec2 = this.computeGradient( this.i2p(sourcei), this.chemokinereal )
 			bias = this.linAttractor( this.i2p(sourcei), this.i2p(targeti), gradientvec2 )
 		}  else {
 			throw("Unknown GRADIENT_TYPE. Please choose 'linear', 'radial', 'grid', or 'custom'." )
