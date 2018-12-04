@@ -31,7 +31,7 @@ class CPMchemotaxis extends CPM {
 		this.size = field_size.x
 
 		// diffusion variables
-		this.resolutionDecrease = 8
+		this.resolutionDecrease = 10
 		this.newSize = this.size/this.resolutionDecrease
 		this.D = 6.2 * Math.pow(10, -5)/10 // 10 diffusion steps per MCS
 		this.dx = .38/(600/this.resolutionDecrease)//1 //pixel
@@ -41,7 +41,7 @@ class CPMchemotaxis extends CPM {
 
 		// biased entry variables
 		this.entryBias = 0
-		this.entryBiasStrength = 0.97
+		this.entryBiasStrength = 1
 
 		// prepare laplacian matrix
 		this.L = math.multiply( math.identity( (this.newSize)*(this.newSize), (this.newSize)*(this.newSize), 'sparse' ), -4 )
@@ -108,10 +108,10 @@ class CPMchemotaxis extends CPM {
 				let scalex = x/this.resolutionDecrease
 				let scaley = y/this.resolutionDecrease
 				let value = this.interpolate(scalex, scaley, chemokineMatrix)
-				if(value * (Math.abs(x-this.size/2)+Math.abs(y-this.size/2)) > 0){
-					// console.log(value * (Math.abs(x-100)+Math.abs(y-100)))
-					// meandist += value * (Math.abs(x-this.size/2)+Math.abs(y-this.size/2))
-				}
+				// if(value * (Math.abs(x-this.size/2)+Math.abs(y-this.size/2)) > 0){
+				// 	// console.log(value * (Math.abs(x-100)+Math.abs(y-100)))
+				// 	// meandist += value * (Math.abs(x-this.size/2)+Math.abs(y-this.size/2))
+				// }
 				this.chemokinereal.set([x,y], value)
 			}
 		}

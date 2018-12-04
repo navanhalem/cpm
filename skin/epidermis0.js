@@ -131,9 +131,9 @@ function step(){
 		Cimgradient.drawChemokineGradientFromList( "0061ff" )
 
 		if (sim.time % savetime == 0) {
-			console.log(simulationType, sim.time)
-			Cim.writePNG("output/" + sim.time + "_" + simulationType + ".png")
-			fs.writeFileSync("output/" + sim.time + "_" + simulationType + "G.png", Cimgradient.el.toBuffer())
+			// console.log(simulationType, sim.time)
+			Cim.writePNG("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + entryBias + "_" + simulationType + ".png")
+			// fs.writeFileSync("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + entryBias + "_" + simulationType + "G.png", Cimgradient.el.toBuffer())
 		}
 
 		//log data
