@@ -34,6 +34,7 @@ var simulationType = parseInt(process.argv[9]) || 1
 var infectionChance = parseFloat(process.argv[10]) || 0.000025
 var maxAct = parseInt(process.argv[11]) || 20
 var lAct = parseInt(process.argv[12]) || 1000
+var borderingparameter = parseInt(process.argv[13]) || 2
 
 var report = true
 
@@ -56,7 +57,7 @@ function initialize(){
 	C.entryBias = entryBias
 	C.maxTCells = max_CTL
 	C.infectionStart = infectionStart
-	C.maxKilling = killingTime * 25 * avg_border_CTL_infection
+	C.maxKilling = killingTime * 60 * avg_border_CTL_infection
 	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
 	Cimgradient = new BGCanvas( C, {zoom:zoom, wrap:wrap} )
 
@@ -67,9 +68,11 @@ function initialize(){
 	simsettings["NRCELLS"][1] *= kera_cells_factor
 	sim = new simulation( C, Cim, Cs, simsettings, Ct )
 	sim.initialize()
+	sim.borderingparameter = borderingparameter
 	sim.infectionChance = infectionChance
 	sim.avg_border_CTL_infection = avg_border_CTL_infection
 	seedInfection()
+	logData()
 	report = true
 	startSim()
 	step()
@@ -120,25 +123,24 @@ function step(){
 
 		sim.timestep()
 		sim.drawCanvas()
-		// if ( sim.time == timestart+1 ) {
-			C.produceChemokine()
-		// }
+		C.produceChemokine()
 		for(let i = 0; i < 10; i++) {
 			C.updateValues()
 		}
+		C.updateGrid()
 		C.removeChemokine()
 		Cimgradient.drawChemokineGradientFromList( "ffffff" )
 		Cimgradient.drawChemokineGradientFromList( "0061ff" )
 
 		if (sim.time % savetime == 0) {
-			console.log(simulationType, sim.time)
-			Cim.writePNG("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + entryBias + "_" + simulationType + ".png")
+			// console.log(simulationType, sim.time)
+			Cim.writePNG("output/" + sim.time + "_" + borderingparameter + ".png")
 			// fs.writeFileSync("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + entryBias + "_" + simulationType + "G.png", Cimgradient.el.toBuffer())
 		}
 
 		//log data
-		if(report){
-			// logData()
+		if(report && sim.time % 30 == 0){
+			logData()
 		}
 	}
 }

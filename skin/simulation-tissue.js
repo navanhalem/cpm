@@ -28,6 +28,9 @@ function simulation( C, Cim, Cs, conf, Ct  ){
 	this.Tcell_infection_borders = []
 	this.infectionChance = 0.000025
 	this.avg_border_CTL_infection = 0
+	this.borderingparameter = 2
+
+	this.math = require("mathjs")
 }
 
 simulation.prototype = {
@@ -172,20 +175,29 @@ simulation.prototype = {
 		this.C.setCellKind(maxKey, 3)
 	},
 
+	nmod : function(x, N) {
+		return ((x % N) + N) % N;
+	},
+
+	t21 : function(x,y,N){
+		return this.nmod(y,N)*N+this.nmod(x,N)
+	},
+
 	biasedEntry : function() {
 		let xpos = Math.floor( Math.random()*( this.C.field_size.x ) )
 		let ypos = Math.floor( Math.random()*( this.C.field_size.y ) )
-		let maxConcentration = math.sum(this.C.chemokinelevel)
-	  let sumConcentrations =  math.sum(this.C.chemokinelevel)
+		let maxConcentration = this.math.max(this.C.chemokinelevel)
+		// console.log(maxConcentration)
+	  let sumConcentrations =  this.math.sum(this.C.chemokinelevel)
 
 	  let maxProb = maxConcentration/sumConcentrations
-		let thisProb = this.C.chemokinelevel.get([C.t21(xpos, ypos),0])/sumConcentrations
+		let thisProb = this.C.chemokinelevel.get([this.t21(this.math.floor(xpos/this.C.resolutionDecrease),this.math.floor(ypos/this.C.resolutionDecrease),(this.C.field_size.x/this.C.resolutionDecrease)),0])/sumConcentrations
 		var thisRealProb = (thisProb/maxProb)*this.C.entryBiasStrength + (1-this.C.entryBiasStrength)
 
 		while ( Math.random() > thisRealProb ) {
 			xpos = Math.floor( Math.random()*( this.C.field_size.x ) )
 			ypos = Math.floor( Math.random()*( this.C.field_size.y ) )
-			thisProb = this.C.chemokinelevel.get([C.t21(xpos, ypos),0])/sumConcentrations
+			thisProb = this.C.chemokinelevel.get([this.t21(this.math.floor(xpos/this.C.resolutionDecrease),this.math.floor(ypos/this.C.resolutionDecrease),(this.C.field_size.x/this.C.resolutionDecrease)),0])/sumConcentrations
 			thisRealProb = (thisProb/maxProb)*this.C.entryBiasStrength + (1-this.C.entryBiasStrength)
 		}
 		return [xpos, ypos]
@@ -205,7 +217,7 @@ simulation.prototype = {
 			cell_idToReplace = this.C.pixt([x, y])
 			typeToReplace = this.C.cellKind(cell_idToReplace)
 		}
-		if (this.C.killing[cell_idToReplace] < 7500 && this.C.infection[cell_idToReplace] > 0) {
+		if (this.C.killing[cell_idToReplace] < this.C.maxKilling && this.C.infection[cell_idToReplace] > 0) {
 			this.replaceInfectionBorderCell(cell_idToReplace)
 		}
 		this.C.infection[cell_idToReplace] = -1
@@ -224,7 +236,7 @@ simulation.prototype = {
 					border += neighbors[1][neighbors[0][j]]
 				}
 			}
-			if(border > this.avg_border_CTL_infection*(2/3)) {
+			if(border > this.avg_border_CTL_infection*(this.borderingparameter/3)) {
 				infectedNeighbor = true
 			}
 			if(this.C.cellKind(CTLs[i]) == 1 && infectedNeighbor) {
@@ -242,7 +254,7 @@ simulation.prototype = {
 		this.kill()
 		this.infectOthers()
 		this.getMoreInfected()
-		if ((this.time + 1) % 20 == 0 && this.C.countCells(1) + this.C.countCells(5) < this.C.maxTCells) {
+		if ((this.time + 1) % 48 == 0 && this.C.countCells(1) + this.C.countCells(5) < this.C.maxTCells) {
 			this.addTCell()
 		}
 		this.C.monteCarloStep()

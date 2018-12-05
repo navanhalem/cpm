@@ -61,64 +61,53 @@ class CPMchemotaxis extends CPM {
 		this.chemokinereal = math.zeros(this.size*this.size,1)
 	}
 
+	// at every pixel occupied by an infected cell, secrete (secretion rate/(resolutionDecrease^2)) chemokine
 	produceChemokine () {
 		for (var x = 0; x < this.size; x++) {
 	    for (var y = 0; y < this.size; y++) {
 				if (this.infection[this.pixt([x,y])] > 0) {
-					// if ( x == this.size/2 && y == this.size/2) {
-						// console.log("chemokine placed")
-						let index = [t21(math.floor(x/this.resolutionDecrease),math.floor(y/this.resolutionDecrease),(this.newSize)),0]
-						this.chemokinelevel.set(index, this.chemokinelevel.get(index) + (this.secretion/(this.resolutionDecrease*this.resolutionDecrease)) * this.dt)
-						// console.log(math.sum(this.chemokinelevel))
-					// }
+					let index = [t21(math.floor(x/this.resolutionDecrease),math.floor(y/this.resolutionDecrease),(this.newSize)),0]
+					this.chemokinelevel.set(index, this.chemokinelevel.get(index) + (this.secretion/(this.resolutionDecrease*this.resolutionDecrease)) * this.dt)
 				}
 			}
 		}
 	}
 
+	// perform diffusion
 	updateValues () {
 		this.chemokinelevel = math.add( math.multiply( this.A, this.chemokinelevel ), this.chemokinelevel )
 	}
 
+	// interpolate between the grid points in the diffusion grid to obtain a more accurate chemokine value for the main grid
 	interpolate(x, y, c) {
 		let xplus = x + 0.001
 		let yplus = y + 0.001
-		// console.log(c.get([nmod(math.ceil(xplus),this.newSize), nmod(math.ceil(yplus),this.newSize)]),c.get([nmod(math.ceil(xplus),this.newSize), nmod(math.floor(yplus),this.newSize)]),c.get([nmod(math.floor(xplus),this.newSize), nmod(math.ceil(yplus),this.newSize)]),c.get([nmod(math.floor(xplus),this.newSize), nmod(math.floor(yplus),this.newSize)]))
 		let p1 = c.get([nmod(math.ceil(xplus),this.newSize), nmod(math.ceil(yplus),this.newSize)]) * Math.abs((x - math.floor(xplus)) * (y - math.floor(yplus)))
 		let p2 = c.get([nmod(math.ceil(xplus),this.newSize), nmod(math.floor(yplus),this.newSize)]) * Math.abs((x - math.floor(xplus)) * (math.ceil(yplus) - y))
 		let p3 = c.get([nmod(math.floor(xplus),this.newSize), nmod(math.ceil(yplus),this.newSize)]) * Math.abs((math.ceil(xplus) - x) * (y - math.floor(yplus)))
 		let p4 = c.get([nmod(math.floor(xplus),this.newSize), nmod(math.floor(yplus),this.newSize)]) * Math.abs((math.ceil(xplus) - x) * (math.ceil(yplus) - y))
-		// console.log(Math.abs((x - math.floor(xplus)) * (y - math.floor(yplus))), Math.abs((x - math.floor(xplus)) * (math.ceil(yplus) - y)), Math.abs((math.ceil(xplus) - x) * (y - math.floor(yplus))), Math.abs((math.ceil(xplus) - x) * (math.ceil(yplus) - y)))
-		// console.log(p1+p2+p3+p4)
 		return (p1+p2+p3+p4)
 	}
 
-	removeChemokine () {
-		let meandist = 0
+	// updates the main grid with interpolated values of the chamokine grid
+	updateGrid () {
 		let chemokineMatrix = math.reshape(this.chemokinelevel, [(this.newSize), (this.newSize)])
-		// for (var x = 0; x < this.newSize; x++) {
-	  //   for (var y = 0; y < this.newSize; y++) {
-		// 		let value = chemokineMatrix.get([x,y])
-		// 		meandist += value * (Math.sqrt(Math.pow(x-this.newSize/2, 2)+Math.pow(y-this.newSize/2, 2)))
-		// 	}
-		// }
 		this.chemokinereal = math.reshape(this.chemokinereal, [this.size, this.size])
 		for (var x = 0; x < this.size; x++) {
 	    for (var y = 0; y < this.size; y++) {
 				let scalex = x/this.resolutionDecrease
 				let scaley = y/this.resolutionDecrease
 				let value = this.interpolate(scalex, scaley, chemokineMatrix)
-				// if(value * (Math.abs(x-this.size/2)+Math.abs(y-this.size/2)) > 0){
-				// 	// console.log(value * (Math.abs(x-100)+Math.abs(y-100)))
-				// 	// meandist += value * (Math.abs(x-this.size/2)+Math.abs(y-this.size/2))
-				// }
 				this.chemokinereal.set([x,y], value)
 			}
 		}
-		// console.log(meandist)
 		this.chemokinereal = math.reshape(this.chemokinereal, [this.size*this.size, 1])
-		this.chemokinelevel = math.multiply(this.chemokinelevel, 1 - this.decay * this.dt)
 		this.chemokinelevel = math.reshape(this.chemokinelevel, [(this.newSize)*(this.newSize), 1])
+	}
+
+	// removes a percentage of the chemokine
+	removeChemokine () {
+		this.chemokinelevel = math.multiply(this.chemokinelevel, 1 - this.decay * this.dt)
 	}
 
 	/*  To bias a copy attempt p1->p2 in the direction of target point pt.
