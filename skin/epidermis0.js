@@ -132,15 +132,18 @@ function step(){
 		Cimgradient.drawChemokineGradientFromList( "ffffff" )
 		Cimgradient.drawChemokineGradientFromList( "0061ff" )
 
-		if (sim.time % savetime == 0) {
-			// console.log(simulationType, sim.time)
-			// Cim.writePNG("output/" + sim.time + "_" + borderingparameter + ".png")
-			// fs.writeFileSync("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + entryBias + "_" + simulationType + "G.png", Cimgradient.el.toBuffer())
-		}
+		// if (sim.time % savetime == 0) {
+		// 	// console.log(simulationType, sim.time)
+		// 	Cim.writePNG("output/" + sim.time + "_" + borderingparameter + ".png")
+		// 	// fs.writeFileSync("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + entryBias + "_" + simulationType + "G.png", Cimgradient.el.toBuffer())
+		// }
 
 		//log data
 		if(report && sim.time % 30 == 0){
 			logData()
+			if(C.countCells(3) == 0){
+				stopSim()
+			}
 		}
 	}
 }
