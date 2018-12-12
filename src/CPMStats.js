@@ -553,6 +553,8 @@ CPMStats.prototype = {
 	cellNeighborsList : function( cell, cbpi ) {
 		if (!cbpi) {
 			cbpi = this.cellborderpixelsi()[cell]
+		} else {
+			cbpi = cbpi[cell]
 		}
 		neigh_cell = []
 		neigh_cell_amountborder = {}

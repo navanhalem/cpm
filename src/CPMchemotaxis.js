@@ -91,11 +91,11 @@ class CPMchemotaxis extends CPM {
 
 	// updates the main grid with interpolated values of the chamokine grid
 	updateGrid () {
-		console.time("reshape1")
+		// console.time("reshape1")
 		let chemokineMatrix = math.reshape(this.chemokinelevel, [(this.newSize), (this.newSize)])
 		this.chemokinereal = math.reshape(this.chemokinereal, [this.size, this.size])
-		console.timeEnd("reshape1")
-		console.time("interpolating")
+		// console.timeEnd("reshape1")
+		// console.time("interpolating")
 		for (var x = 0; x < this.size; x++) {
 	    for (var y = 0; y < this.size; y++) {
 				let scalex = x/this.resolutionDecrease
@@ -104,11 +104,11 @@ class CPMchemotaxis extends CPM {
 				this.chemokinereal.set([x,y], value)
 			}
 		}
-		console.timeEnd("interpolating")
-		console.time("reshape2")
+		// console.timeEnd("interpolating")
+		// console.time("reshape2")
 		this.chemokinereal = math.reshape(this.chemokinereal, [this.size*this.size, 1])
 		this.chemokinelevel = math.reshape(this.chemokinelevel, [(this.newSize)*(this.newSize), 1])
-		console.timeEnd("reshape2")
+		// console.timeEnd("reshape2")
 	}
 
 	// removes a percentage of the chemokine

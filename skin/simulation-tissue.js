@@ -246,7 +246,7 @@ simulation.prototype = {
 		this.kill()
 		this.infectOthers()
 		this.getMoreInfected()
-		if ((this.time + 1) % 48 == 0 && this.C.countCells(1) + this.C.countCells(5) < this.C.maxTCells) {
+		if ((this.time + 1) % 20 == 0 && this.C.countCells(1) + this.C.countCells(5) < this.C.maxTCells) {
 			this.addTCell()
 		}
 		this.C.monteCarloStep()

@@ -121,31 +121,31 @@ function step(){
 
 	while ( sim.time <= sim.runtime && !sim.stop ) {
 
-		console.time("mcs")
+		// console.time("mcs")
 		sim.timestep()
-		console.timeEnd("mcs")
+		// console.timeEnd("mcs")
 		// sim.drawCanvas()
-		console.time("chemokine")
+		// console.time("chemokine")
 
-		console.time("p c")
+		// console.time("p c")
 		C.produceChemokine()
-		console.timeEnd("p c")
+		// console.timeEnd("p c")
 
-		console.time("d c")
+		// console.time("d c")
 		for(let i = 0; i < 10; i++) {
 			C.updateValues()
 		}
-		console.timeEnd("d c")
+		// console.timeEnd("d c")
 
-		console.time("update grid")
+		// console.time("update grid")
 		C.updateGrid()
-		console.timeEnd("update grid")
+		// console.timeEnd("update grid")
 
-		console.time("r c")
+		// console.time("r c")
 		C.removeChemokine()
-		console.timeEnd("r c")
+		// console.timeEnd("r c")
 
-		console.timeEnd("chemokine")
+		// console.timeEnd("chemokine")
 		// Cimgradient.drawChemokineGradientFromList( "ffffff" )
 		// Cimgradient.drawChemokineGradientFromList( "0061ff" )
 
