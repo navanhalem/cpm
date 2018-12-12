@@ -77,32 +77,23 @@ simulation.prototype = {
 
 	},
 
-	getCellsToAffect : function( affectors, targetmin, targetmax, value ){
+	getCellsToAffect : function( affectors, targetmin, targetmax ){
 		var cellsToAffect = {}
-		var cellsToAffectNr = {}
+		let cbpi = this.Cs.cellborderpixelsi()
 		for ( i = 0; i < affectors.length; i++ ) {
-			infectedCellNeighbors = this.Cs.cellNeighborsList(affectors[i])[1]
-			for (const [key, value] of Object.entries(this.Cs.cellNeighborsList(affectors[i])[1])) {
+			infectedCellNeighbors = this.Cs.cellNeighborsList(affectors[i], cbpi)[1]
+			for (const [key, value] of Object.entries(infectedCellNeighbors)) {
 				if (this.C.infection[key] <= targetmax && this.C.infection[key] >= targetmin){
 					if ( key in cellsToAffect ){
 						cellsToAffect[key] = cellsToAffect[key] + value
-						cellsToAffectNr[key] = cellsToAffectNr[key] + 1
 					}
 					else {
 						cellsToAffect[key] = value
-						cellsToAffectNr[key] = 1
 					}
-					// if (targetmax == this.C.maxInfection){
-					// 	console.log(value)
-					// }
 				}
 			}
 		}
-		if (value) {
-			return cellsToAffect
-		} else {
-			return cellsToAffectNr
-		}
+		return cellsToAffect
 	},
 
 	findCells : function(infectionLevelMin, infectionLevelMax){
@@ -117,7 +108,7 @@ simulation.prototype = {
 
 	kill : function(){
 		var killers = this.findCells(-1, -1)
-		var infectedNeighbors = this.getCellsToAffect( killers, 1, this.C.maxInfection, true )
+		var infectedNeighbors = this.getCellsToAffect( killers, 1, this.C.maxInfection )
 
 		for (const [key, value] of Object.entries(infectedNeighbors)){
 			let rand = Math.random()
@@ -140,7 +131,7 @@ simulation.prototype = {
 
 	infectOthers : function(){
 		var infected = this.findCells(1, this.C.maxInfection)
-		var skinNeighbors = this.getCellsToAffect( infected, 0, 0, true )
+		var skinNeighbors = this.getCellsToAffect( infected, 0, 0 )
 
 		for (const [key, value] of Object.entries(skinNeighbors)){
 			let rand = Math.random()
@@ -161,7 +152,7 @@ simulation.prototype = {
 
 	replaceInfectionBorderCell : function(cell_idToReplace){
 		// replace border cell with most infected neighbors with this cell
-		var skinNeighbors = this.getCellsToAffect( this.findCells(1, this.C.maxInfection), 0, 0, true )
+		var skinNeighbors = this.getCellsToAffect( this.findCells(1, this.C.maxInfection), 0, 0 )
 		var maxKey = -1
 		var maxVal = -1
 		for (const [key, value] of Object.entries(skinNeighbors)){
@@ -227,8 +218,9 @@ simulation.prototype = {
 
 	changeCTLBehavior : function() {
 		let CTLs = this.findCells(-1, -1)
+		let cbpi = this.Cs.cellborderpixelsi()
 		for(let i = 0; i < CTLs.length; i++) {
-			let neighbors = this.Cs.cellNeighborsList(CTLs[i])
+			let neighbors = this.Cs.cellNeighborsList(CTLs[i], cbpi)
 			let infectedNeighbor = false
 			let border = 0
 			for(let j = 0; j < neighbors.length; j++) {

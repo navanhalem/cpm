@@ -550,14 +550,16 @@ CPMStats.prototype = {
 
 	// returns a list of all cell ids of the cells that border to "cell" and are of a different type (infection amount differs)
 	// a dictionairy with keys = neighbor cell ids, and values = number of "cell"-pixels the neighbor cell borders to
-	cellNeighborsList : function( cell ) {
-		cellborderpixels = this.cellborderpixelsi()[cell]
+	cellNeighborsList : function( cell, cbpi ) {
+		if (!cbpi) {
+			cbpi = this.cellborderpixelsi()[cell]
+		}
 		neigh_cell = []
 		neigh_cell_amountborder = {}
 		//loop over border pixels of cell
-		for ( cellpix = 0; cellpix < cellborderpixels.length; cellpix++ ) {
+		for ( cellpix = 0; cellpix < cbpi.length; cellpix++ ) {
 			//get neighbouring pixels of borderpixel of cell
-			neighbours_of_borderpixel_cell = sim.C.neighi(cellborderpixels[cellpix])
+			neighbours_of_borderpixel_cell = sim.C.neighi(cbpi[cellpix])
 			//don't add a pixel in cell more than twice
 			// added_to = []
 			//loop over neighbouring pixels and store the parent cell if it is different from
