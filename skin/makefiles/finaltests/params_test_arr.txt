@@ -1,0 +1,6 @@
+0	30	0	arresting
+0	30	1	arresting
+200	30	0	arresting
+200	30	1	arresting
+700	30	0	arresting
+700	30	1	arresting

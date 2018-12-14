@@ -120,11 +120,10 @@ function step(){
 	let timestart = sim.time
 
 	while ( sim.time <= sim.runtime && !sim.stop ) {
-
+		// console.time("MCS")
 		// console.time("mcs")
 		sim.timestep()
 		// console.timeEnd("mcs")
-		// sim.drawCanvas()
 		// console.time("chemokine")
 
 		// console.time("p c")
@@ -148,9 +147,10 @@ function step(){
 		// console.timeEnd("chemokine")
 		// Cimgradient.drawChemokineGradientFromList( "ffffff" )
 		// Cimgradient.drawChemokineGradientFromList( "0061ff" )
-
+		// console.timeEnd("MCS")
 		// if (sim.time % savetime == 0) {
 		// 	// console.log(simulationType, sim.time)
+		// 	sim.drawCanvas()
 		// 	Cim.writePNG("output/" + sim.time + "_" + borderingparameter + ".png")
 		// 	// fs.writeFileSync("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + entryBias + "_" + simulationType + "G.png", Cimgradient.el.toBuffer())
 		// }

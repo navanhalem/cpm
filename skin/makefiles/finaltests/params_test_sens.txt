@@ -1,0 +1,6 @@
+30	45	0	sensitive
+30	45	1	sensitive
+100	45	0	sensitive
+100	45	1	sensitive
+700	45	0	sensitive
+700	45	1	sensitive

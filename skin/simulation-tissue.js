@@ -243,14 +243,26 @@ simulation.prototype = {
 	// Update the grid and either draw it or print track output
 	timestep : function(){
 		// Update the grid with one MCS
+		// console.time("kill")
 		this.kill()
+		// console.timeEnd("kill")
+		// console.time("IO")
 		this.infectOthers()
+		// console.timeEnd("IO")
+		// console.time("moreinf")
 		this.getMoreInfected()
+		// console.timeEnd("moreinf")
+		// console.time("addctl")
 		if ((this.time + 1) % 20 == 0 && this.C.countCells(1) + this.C.countCells(5) < this.C.maxTCells) {
 			this.addTCell()
 		}
+		// console.timeEnd("addctl")
+		// console.time("realmcs")
 		this.C.monteCarloStep()
+		// console.timeEnd("realmcs")
+		// console.time("changebeh")
 		this.changeCTLBehavior()
+		// console.timeEnd("changebeh")
 		this.time++
 	},
 

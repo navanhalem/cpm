@@ -1,0 +1,6 @@
+30	60	0	motile
+30	60	1	motile
+300	60	0	motile
+300	60	1	motile
+700	60	0	motile
+700	60	1	motile

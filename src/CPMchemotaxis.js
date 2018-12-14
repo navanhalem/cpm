@@ -59,6 +59,22 @@ class CPMchemotaxis extends CPM {
 		this.A = math.multiply( this.L, this.D * this.dt / this.dx / this.dx )
 		this.chemokinelevel = math.zeros((this.newSize)*(this.newSize),1)
 		this.chemokinereal = math.zeros(this.size*this.size,1)
+
+		//create list for faster interpolation
+		this.interpolatelist = [[]]
+		for (var x = 0; x < this.size; x++) {
+			this.interpolatelist.push([])
+	    for (var y = 0; y < this.size; y++) {
+				let xplus = x/this.resolutionDecrease + 0.001
+				let yplus = y/this.resolutionDecrease + 0.001
+				let p1 = Math.abs((x/this.resolutionDecrease - math.floor(xplus)) * (y/this.resolutionDecrease - math.floor(yplus)))
+				let p2 = Math.abs((x/this.resolutionDecrease - math.floor(xplus)) * (math.ceil(yplus) - y/this.resolutionDecrease))
+				let p3 = Math.abs((math.ceil(xplus) - x/this.resolutionDecrease) * (y/this.resolutionDecrease - math.floor(yplus)))
+				let p4 = Math.abs((math.ceil(xplus) - x/this.resolutionDecrease) * (math.ceil(yplus) - y/this.resolutionDecrease))
+				this.interpolatelist[x].push([p1, p2, p3, p4])
+			}
+		}
+
 	}
 
 	// at every pixel occupied by an infected cell, secrete (secretion rate/(resolutionDecrease^2)) chemokine
@@ -82,14 +98,19 @@ class CPMchemotaxis extends CPM {
 	interpolate(x, y, c) {
 		let xplus = x + 0.001
 		let yplus = y + 0.001
-		let p1 = c.get([nmod(math.ceil(xplus),this.newSize), nmod(math.ceil(yplus),this.newSize)]) * Math.abs((x - math.floor(xplus)) * (y - math.floor(yplus)))
-		let p2 = c.get([nmod(math.ceil(xplus),this.newSize), nmod(math.floor(yplus),this.newSize)]) * Math.abs((x - math.floor(xplus)) * (math.ceil(yplus) - y))
-		let p3 = c.get([nmod(math.floor(xplus),this.newSize), nmod(math.ceil(yplus),this.newSize)]) * Math.abs((math.ceil(xplus) - x) * (y - math.floor(yplus)))
-		let p4 = c.get([nmod(math.floor(xplus),this.newSize), nmod(math.floor(yplus),this.newSize)]) * Math.abs((math.ceil(xplus) - x) * (math.ceil(yplus) - y))
+		let cx = nmod(((xplus) << 0)+1,this.newSize)
+		let fx = nmod((xplus) << 0,this.newSize)
+		let cy = nmod(((yplus) << 0)+1,this.newSize)
+		let fy = nmod((yplus) << 0,this.newSize)
+		// console.log(x, y, this.interpolatelist[x*this.resolutionDecrease][y*this.resolutionDecrease])
+		let p1 = c.get([cx, cy]) * this.interpolatelist[x*this.resolutionDecrease][y*this.resolutionDecrease][0]
+		let p2 = c.get([cx, fy]) * this.interpolatelist[x*this.resolutionDecrease][y*this.resolutionDecrease][1]
+		let p3 = c.get([fx, cy]) * this.interpolatelist[x*this.resolutionDecrease][y*this.resolutionDecrease][2]
+		let p4 = c.get([fx, fy]) * this.interpolatelist[x*this.resolutionDecrease][y*this.resolutionDecrease][3]
 		return (p1+p2+p3+p4)
 	}
 
-	// updates the main grid with interpolated values of the chamokine grid
+	// updates the main grid with interpolated values of the chemokine grid
 	updateGrid () {
 		// console.time("reshape1")
 		let chemokineMatrix = math.reshape(this.chemokinelevel, [(this.newSize), (this.newSize)])
