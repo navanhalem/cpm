@@ -476,6 +476,11 @@ CPMStats.prototype = {
 		var tx = Object.keys( cp )
 		var cvec, i
 
+		if(arguments.length == 0) {
+			list = arguments
+			all = true
+		}
+
 		// loop over the cells in tx to get their centroids
 		if ( all ) {
 			for( i = 0; i < tx.length; i++ ){

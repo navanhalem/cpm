@@ -1,7 +1,7 @@
 settings=$settingsfolder/$expname-settings.js
 template=$settingsfolder/$expname-template.js #txt
 
-paramfile=params_test_arr.txt
+paramfile=params.txt
 nsim=30
 
 # ---------------------------------------------------------------------
@@ -19,7 +19,7 @@ for p in $(seq 1 $np) ; do
 	LAMBDACHEM=$( cat $paramfile | awk -v line=$p 'NR==line{print $1}')
 	KILLINGTIME=$( cat $paramfile | awk -v line=$p 'NR==line{print $2}')
 	BIASEDENTRY=$( cat $paramfile | awk -v line=$p 'NR==line{print $3}')
-	EXPNAME=$( cat $paramfile | awk -v line=$p 'NR==line{print $4}')
+	EXPNAME="arresting"
 		
 	NAME=$EXPNAME-lambdachem$LAMBDACHEM-killingtime$KILLINGTIME-biasedentry$BIASEDENTRY
 
