@@ -33,7 +33,7 @@ class CPMchemotaxis extends CPM {
 		// diffusion variables
 		this.resolutionDecrease = 10
 		this.newSize = this.size/this.resolutionDecrease
-		this.D = 6.2 * Math.pow(10, -5)/10 // 10 diffusion steps per MCS
+		this.D = 6.2 * Math.pow(10, -5)/10 /* 10 diffusion steps per MCS */ /10 /* factor 10 smaller to test arresting behavior */ 
 		this.dx = .38/(600/this.resolutionDecrease)//1 //pixel
 		this.dt = 60/60//1 //MCS
 		this.secretion = 100 //molecules per lattice site
