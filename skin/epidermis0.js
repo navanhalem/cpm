@@ -21,7 +21,7 @@ var names = {
 
 const fs = require('fs')
 var runtime = parseInt(process.argv[2]) || 1000
-var savetime = parseInt(process.argv[3]) || 10
+var savetime = parseInt(process.argv[3]) || 0
 var field_size = parseInt(process.argv[4]) || 200
 var kera_cells_factor = (field_size*field_size)/(200*200)
 var max_CTL = 100*( (field_size*field_size) / (600*600) )
@@ -149,11 +149,13 @@ function step(){
 		// Cimgradient.drawChemokineGradientFromList( "ffffff" )
 		// Cimgradient.drawChemokineGradientFromList( "0061ff" )
 		// console.timeEnd("MCS")
-		if (sim.time % savetime == 0) {
-			// console.log(simulationType, sim.time)
-			sim.drawCanvas()
-			Cim.writePNG("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + simulationType + "_" + idnr + ".png")
-			// fs.writeFileSync("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + entryBias + "_" + simulationType + "G.png", Cimgradient.el.toBuffer())
+		if (savetime != 0) {
+			if (sim.time % savetime == 0) {
+				// console.log(simulationType, sim.time)
+				sim.drawCanvas()
+				Cim.writePNG("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + simulationType + "_" + idnr + ".png")
+				// fs.writeFileSync("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + entryBias + "_" + simulationType + "G.png", Cimgradient.el.toBuffer())
+			}
 		}
 
 		//log data
