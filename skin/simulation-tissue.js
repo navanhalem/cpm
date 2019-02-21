@@ -20,6 +20,7 @@ function simulation( C, Cim, Cs, conf, Ct  ){
 
 	this.save = this.conf["SAVEIMG"]
 	this.runtime=this.conf["RUNTIME"]
+	this.maxKilling=this.conf["MAXKILLING"]
 	this.simtype = this.conf["SIMTYPE"] || "2D"
 
 	// to track the time of the actual simulation (no burnin)
@@ -30,6 +31,7 @@ function simulation( C, Cim, Cs, conf, Ct  ){
 	this.avg_border_CTL_infection = 0
 	this.borderingparameter = 2
 
+	this.infectionlist = []
 	this.math = require("mathjs")
 }
 
@@ -61,7 +63,9 @@ simulation.prototype = {
 				// 	this.C.seedCellAt( cellkind+1, this.C.midpoint, false )
 				// 	totalcells++
 				// } else {
-					this.C.seedCell( cellkind+1 )
+					let newid = this.C.seedCell( cellkind+1 )
+					if(cellkind == 3)
+					this.infectionlist[newid] = 1
 					totalcells++
 				// }
 			}
@@ -77,13 +81,13 @@ simulation.prototype = {
 
 	},
 
-	getCellsToAffect : function( affectors, targetmin, targetmax ){
+	getCellsToAffect : function( affectors, type ){
 		var cellsToAffect = {}
 		let cbpi = this.Cs.cellborderpixelsi()
 		for ( i = 0; i < affectors.length; i++ ) {
 			infectedCellNeighbors = this.Cs.cellNeighborsList(affectors[i], cbpi)[1]
 			for (const [key, value] of Object.entries(infectedCellNeighbors)) {
-				if (this.C.infection[key] <= targetmax && this.C.infection[key] >= targetmin){
+				if (this.C.t2k[key] == type){
 					if ( key in cellsToAffect ){
 						cellsToAffect[key] = cellsToAffect[key] + value
 					}
@@ -96,10 +100,10 @@ simulation.prototype = {
 		return cellsToAffect
 	},
 
-	findCells : function(infectionLevelMin, infectionLevelMax){
+	findCells : function(type){
 		var cells = []
 		for( i = 0; i < this.C.t2k.length; i++ ) {
-			if( this.C.infection[i] >= infectionLevelMin  && this.C.infection[i] <= infectionLevelMax ) {
+			if( this.C.t2k[i] == type ) {
 				cells.push(i)
 			}
 		}
@@ -107,14 +111,12 @@ simulation.prototype = {
 	},
 
 	kill : function(){
-		var killers = this.findCells(-1, -1)
-		var infectedNeighbors = this.getCellsToAffect( killers, 1, this.C.maxInfection )
+		var killers = this.findCells(1).concat(this.findCells(5))
+		var infectedNeighbors = this.getCellsToAffect( killers, 3 )
 
 		for (const [key, value] of Object.entries(infectedNeighbors)){
 			let rand = Math.random()
-			if (rand < value * (1/this.C.maxKilling) ){
-				this.C.killing[key] = this.C.maxKilling
-				this.C.infection[key] = -2
+			if (rand < value * (1/this.maxKilling) ){
 				this.C.setCellKind(key, 4)
 			}
 			// if (this.C.killing[key] < this.C.maxKilling){
@@ -130,13 +132,13 @@ simulation.prototype = {
 	},
 
 	infectOthers : function(){
-		var infected = this.findCells(1, this.C.maxInfection)
-		var skinNeighbors = this.getCellsToAffect( infected, 0, 0 )
+		var infected = this.findCells(3)
+		var skinNeighbors = this.getCellsToAffect( infected, 2 )
 
 		for (const [key, value] of Object.entries(skinNeighbors)){
 			let rand = Math.random()
 			if (rand < value * this.infectionChance){
-				this.C.infection[key] = 1
+				this.infectionlist[key] = 1
 				this.C.setCellKind(key, 3)
 			}
 		}
@@ -144,15 +146,15 @@ simulation.prototype = {
 
 	getMoreInfected : function(){
 		for( i = 0; i < this.C.t2k.length; i++ ) {
-			if( this.C.infection[i] > 0 && this.C.infection[i] < this.C.maxInfection ) {
-				this.C.infection[i] = this.C.infection[i] + 1
+			if( this.infectionlist[i] > 0 && this.infectionlist[i] < 2000 ) {
+				this.infectionlist[i] = this.infectionlist[i] + 1
 			}
 		}
 	},
 
 	replaceInfectionBorderCell : function(cell_idToReplace){
 		// replace border cell with most infected neighbors with this cell
-		var skinNeighbors = this.getCellsToAffect( this.findCells(1, this.C.maxInfection), 0, 0 )
+		var skinNeighbors = this.getCellsToAffect( this.findCells(3), 2 )
 		var maxKey = -1
 		var maxVal = -1
 		for (const [key, value] of Object.entries(skinNeighbors)){
@@ -161,8 +163,7 @@ simulation.prototype = {
 				maxVal = value
 			}
 		}
-		this.C.killing[maxKey] = this.C.killing[cell_idToReplace]
-		this.C.infection[maxKey] = this.C.infection[cell_idToReplace]
+		this.infectionlist[maxKey] = this.infectionlist[cell_idToReplace]
 		this.C.setCellKind(maxKey, 3)
 	},
 
@@ -208,16 +209,15 @@ simulation.prototype = {
 			cell_idToReplace = this.C.pixt([x, y])
 			typeToReplace = this.C.cellKind(cell_idToReplace)
 		}
-		if (this.C.killing[cell_idToReplace] < this.C.maxKilling && this.C.infection[cell_idToReplace] > 0) {
+		if (this.infectionlist[cell_idToReplace] > 0) {
 			this.replaceInfectionBorderCell(cell_idToReplace)
 		}
-		this.C.infection[cell_idToReplace] = -1
-		this.C.killing[cell_idToReplace] = -1
+		this.infectionlist[cell_idToReplace] = -1
 		this.C.setCellKind(cell_idToReplace, 1)
 	},
 
 	changeCTLBehavior : function() {
-		let CTLs = this.findCells(-1, -1)
+		let CTLs = this.findCells(1).concat(this.findCells(5))
 		let cbpi = this.Cs.cellborderpixelsi()
 		for(let i = 0; i < CTLs.length; i++) {
 			let neighbors = this.Cs.cellNeighborsList(CTLs[i], cbpi)
@@ -339,7 +339,7 @@ simulation.prototype = {
 		// Draw each cellkind appropriately
 		for( cellkind = 0; cellkind < nrcells.length; cellkind ++ ){
 			if( cellcolor[ cellkind ] != -1 ){
-				this.Cim.drawCells( cellkind+1, cellcolor[cellkind] )
+				this.Cim.drawCells( cellkind+1, cellcolor[cellkind], this.infectionlist )
 			}
 			if( actcolor[ cellkind ] ){
 				this.Cim.drawActivityValues( cellkind + 1 )

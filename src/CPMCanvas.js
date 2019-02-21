@@ -1,7 +1,7 @@
 /** Class for taking a CPM grid and displaying it in either browser or with nodejs. */
 
 // Constructor takes a CPM object C
-function CPMCanvas( C, options ){
+function CPMCanvas( C, options, simdata ){
 	this.C = C
 	this.zoom = (options && options.zoom) || 1
 
@@ -104,7 +104,7 @@ CPMCanvas.prototype = {
 				pdraw = this.i2p( cst[i] )
 				pc = this.C.pixt( [p[0],p[1],0] )
 				pr = this.C.pixt( [p[0]+1,p[1],0] )
-				pl = this.C.pixt( [p[0]-1,p[1],0] )		
+				pl = this.C.pixt( [p[0]-1,p[1],0] )
 				pd = this.C.pixt( [p[0],p[1]+1,0] )
 				pu = this.C.pixt( [p[0],p[1]-1,0] )
 				if( pc != pl  ){
@@ -131,7 +131,7 @@ CPMCanvas.prototype = {
 		// the grid. The function tohex is used to convert computed color gradients
 		// to the hex format.
 		var cst = Object.keys( this.C.cellpixelstype ), ii, sigma, a,
-			tohex = function(a) { a = parseInt(255*a).toString(16) 
+			tohex = function(a) { a = parseInt(255*a).toString(16)
 				return  ("00".substring(0,2-a.length))+a }, i
 
 		// loop over all pixels belonging to non-background, non-stroma
@@ -148,7 +148,7 @@ CPMCanvas.prototype = {
 						this.col( "FF"+tohex(2-2*a)+"00" )
 					} else {
 						this.col( tohex(2*a)+"FF00" )
-					} 
+					}
 					this.pxf( this.i2p( ii ) )
 				}
 			}
@@ -202,7 +202,7 @@ CPMCanvas.prototype = {
 	},
 
 	/* Draw all cells of cellkind "kind" in color col (hex). */
-	drawCells : function( kind, col ){
+	drawCells : function( kind, col, infectionlist ){
 		col = col || "000000"
 		this.col( col )
 
@@ -214,11 +214,11 @@ CPMCanvas.prototype = {
 				// If cellkind == 2 draw between gray and red depending on how infected the cell is
 				if (kind == 2 || kind == 3 || kind == 4) {
 					cell_id = this.C.pixti(cst[i])
-					if (this.C.killing[cell_id] == this.C.maxKilling) {
+					if (this.C.t2k[cell_id] == 4) {
 						this.col( "000000" )
 					}
 					else {
-						hexCode = this.pickCol(this.hexToRgb( col ), this.hexToRgb( "CC0000" ), 1 - ( this.C.infection[cell_id]/ this.C.maxInfection ) )
+						hexCode = this.pickCol(this.hexToRgb( col ), this.hexToRgb( "CC0000" ), 1 - ( infectionlist[cell_id]/ 2000 ) )
 						this.col( this.fullColorHex(hexCode[0], hexCode[1], hexCode[2]) )
 					}
 				}
@@ -250,4 +250,3 @@ CPMCanvas.prototype = {
 if( typeof module !== "undefined" ){
 	module.exports = CPMCanvas
 }
-

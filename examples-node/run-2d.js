@@ -1,18 +1,18 @@
 /** Run a CPM in 2D, and print centroids of all cells. Also save an image each [framerate=10] monte carlo steps
     after a burnin phase of [burnin=50] Monte Carlo Steps. */
 
-var CPM = require("../src/CPM.js")
+var CPM = require("../src/CPMChemotaxis.js")
 var CPMStats = require("../src/CPMStats.js")
 var CPMCanvas = require("../src/CPMCanvas.js")
 
-var burnin=50
+var burnin=50, maxtime=5000
 
 var nrCells = parseInt(process.argv[2]) || 1
 var fieldSize = parseInt(process.argv[3]) || 1000
 var framerate = parseInt(process.argv[4]) || 10
-var maxtime = parseInt(process.argv[5]) || 5000
 
-var C = new CPM( 2, {x: fieldSize, y:fieldSize}, {
+var C = new CPMChemotaxis( 2, {x: fieldSize, y:fieldSize}, {
+	LAMBDA_CHEMOTAXIS : [0,500,500],
 	LAMBDA_CONNECTIVITY : [0,0,0],
 	LAMBDA_P : [0,2,1],
 	LAMBDA_V : [0,50,50],
@@ -24,7 +24,9 @@ var C = new CPM( 2, {x: fieldSize, y:fieldSize}, {
 	J_T_ECM : [NaN,20,20],
 	J_T_T : [ [NaN,NaN,NaN], [NaN,100,-40], [NaN,-40,NaN] ],
 	T : 20,
-	ACT_MEAN : "geometric"
+	ACT_MEAN : "geometric",
+	GRADIENT_TYPE : "radial",
+	GRADIENT_DIRECTION : [100,100] 
 })
 //C.addStromaBorder()
 var Cstat = new CPMStats( C )
@@ -53,7 +55,7 @@ for( i = 0 ; i < maxtime ; i ++ ){
 		Cim.drawCells( 1, "CCCCCC" )
 
 		Cim.drawCellBorders( "FFFFFF" )
-		Cim.writePNG( "output/2d-"+t+"_"+maxtime/framerate+".png" )
+		Cim.writePNG( "output/2d-"+t+".png" )
 		t ++
 	}
 }

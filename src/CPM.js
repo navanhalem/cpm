@@ -1,26 +1,22 @@
-/** The core CPM class. Can be used for two- or three-dimensional simulations.
+/** The core CPM class. Can be used for two- or three-dimensional simulations. 
 	Usable from browser and node.js.
 */
-
+    
 
 class CPM {
 
 	constructor( ndim, field_size, conf ){
-
+	
 		// Attributes based on input parameters
-		this.field_size = field_size			/* grid size ( Note: the grid will run from 0 to
+		this.field_size = field_size			/* grid size ( Note: the grid will run from 0 to 
 								field_size pixels, so the actual size in pixels is
 								one larger. ) */
 		this.ndim = ndim				// grid dimensions (2 or 3)
 		this.conf = conf				// input parameter settings; see documentation.
-		this.maxInfection = 2000		// cell is completely infected at this number of infection, now infection can spread
-		this.maxKilling = 7500			// infected cells will be killed slowly, when their killing is this high, they die
-		this.maxTCells = 100				// Maximum number of TCells allowed
-		this.infectionStart = 0.1		// radius of the infection as a percentage of the field size
 
 		// Some functions/attributes depend on ndim:
 		if( ndim == 2 ){
-
+	
 			// wrapper functions:
 			//this.neigh = this.neigh2D		/* returns coordinates of neighbor pixels
 			//					(including diagonal neighbors) */
@@ -89,8 +85,6 @@ class CPM {
 		// Attributes per cell:
 		this.cellvolume = []			
 		this.cellperimeter = []		
-		this.infection = []
-		this.killing = []
 		this.t2k = []				// celltype ("kind"). Example: this.t2k[1] is the celltype of cell 1.
 		this.t2k[0] = 0
 
@@ -1032,48 +1026,26 @@ class CPM {
 
 	/* Initiate a new cellid for a cell of celltype "kind", and create elements
 	   for this cell in the relevant arrays (cellvolume, cellperimeter, t2k).*/
-	makeNewCellID ( kind, infected ){
+	makeNewCellID ( kind ){
 		const newid = ++ this.nr_cells
-		if (kind == 1) {
-			this.noTCells = this.noTCells + 1
-		}
 		this.cellvolume[newid] = 0
 		this.cellperimeter[newid] = 0
-		this.infection[newid] = kind - 2 //tcells start with infection -1, skin cells with infection 0
-		this.killing[newid] = -1
-		if (infected == true) {
-			this.infection[newid] = this.maxInfection
-			this.killing[newid] = 0
-			this.setCellKind( newid, 3 )
-			return newid
-		}
 		this.setCellKind( newid, kind )
 		return newid
 	}
 	/* Seed a new cell of celltype "kind" onto position "p".*/
-	seedCellAt ( kind, p, opts, infected ){
-		//console.log("INF:", infected)
-		const newid = this.makeNewCellID( kind, infected )
+	seedCellAt ( kind, p ){
+		const newid = this.makeNewCellID( kind )
 		const id = this.p2i( p )
 		this.setpixi( id, newid )
 		return newid
 	}
-	/* Changes the cell to be infectedif it is in the center of the canvas. */
-	changeIfCenter ( loc, size ){
-		if ( Math.pow((loc[0] - this.midpoint[0]), 2) + Math.pow((loc[1] - this.midpoint[1]), 2) > Math.pow(size, 2) ){
-			return false
-		}
-		else {
-			return true
-		}
-	}
-
 	/* Seed a new cell of celltype "kind" to a random position on the grid.
 		Opts: fixToStroma (only seed next to stroma),
 		brutal (allow seeding into other non-background cell),
 		avoid (do not allow brutal seeding into cell of type "avoid"). */
 	seedCell ( kind, opts ){
-		let N, p, infected
+		let N, p
 		// By default, seed a cell of kind 1, without any options.
 		if( arguments.length < 1 ){
 			kind = 1
@@ -1088,9 +1060,6 @@ class CPM {
 				// random position on the grid
 				p = [this.ran( 0, this.field_size.x-1 ),
 					this.ran( 0, this.field_size.y-1 )]
-				// if ( kind == 2 ){
-				// 	infected = this.changeIfCenter(p, this.field_size.x*this.infectionStart)
-				// }
 				if( this.ndim == 3 ){
 					p.push( this.ran( 0, this.field_size.z-1 ) )
 				} else {
@@ -1123,7 +1092,7 @@ class CPM {
 			}
 		}
 		if( N == 0 ) return false
-		return this.seedCellAt( kind, p, opts, infected )
+		return this.seedCellAt( kind, p, opts )
 	}
 	/* Change the pixels defined by stromavoxels (array of coordinates p) into
 	   the special stromatype. */

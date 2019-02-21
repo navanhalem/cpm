@@ -59,12 +59,13 @@ function initialize(){
 	C.maxTCells = max_CTL
 	C.infectionStart = infectionStart
 	C.maxKilling = killingTime * 60 * avg_border_CTL_infection
+	
 	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
 	Cimgradient = new BGCanvas( C, {zoom:zoom, wrap:wrap} )
-
 	Cs = new CPMStats( C )
 	Ct = null//new TrackCanvas( Cs, {zoom:zoom} )
 
+	simsettings["MAXKILLING"] = killingTime * 60 * avg_border_CTL_infection
 	simsettings["RUNTIME"] = runtime
 	simsettings["NRCELLS"][1] *= kera_cells_factor
 	sim = new simulation( C, Cim, Cs, simsettings, Ct )
@@ -83,7 +84,7 @@ function seedInfection() {
 	let centroids = Cs.getCentroids()
 	for (let i = 0; i < centroids.length; i++) {
 		if(Math.sqrt(Math.pow((centroids[i].x - (field_size/2)), 2) + Math.pow((centroids[i].y - (field_size/2)), 2)) < (field_size*infectionStart)) {
-			C.infection[centroids[i].id] = C.maxInfection / 2
+			sim.infectionlist[centroids[i].id] = 2000 / 2
 			C.setCellKind(centroids[i].id, 3)
 		}
 	}

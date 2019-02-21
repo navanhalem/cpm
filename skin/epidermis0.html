@@ -27,7 +27,7 @@ var names = {
 }
 
 var runtime = 1000
-var field_size = 200
+var field_size = 100
 var kera_cells_factor = (field_size*field_size)/(200*200)
 var max_CTL = 100*( (field_size*field_size) / (600*600) )
 var chemotaxis = 30
@@ -37,26 +37,26 @@ var entryBias = 0
 function initialize(){
 	Cset = CsetChemotaxis
 	Cset.conf["LAMBDA_CHEMOTAXIS"][1] = chemotaxis
-	C = new CPMchemotaxis( Cset.ndim, {x:field_size,y:field_size}, Cset.conf)
+	C = new CPM( Cset.ndim, {x:field_size,y:field_size}, Cset.conf)
 	C.entryBias = entryBias
 	C.maxTCells = max_CTL
+
 	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
 	Cimgradient = new BGCanvas( C, {zoom:zoom, wrap:wrap} )
-
 	Cs = new CPMStats( C )
 	Ct = new TrackCanvas( Cs, {zoom:zoom} )
 
 	Cim.el.onclick=function(){
 			sim.stop = true
-			document.location.href = Cim.el.toDataURL("image/png").
-				replace("image/png", "image/octet-stream");
- 		}
-	//simsettings["CANVASCOLOR"] = "eaecef"
+			document.location.href = Cim.el.toDataURL("image/png").replace("image/png", "image/octet-stream");
+ 	}
 
+	simsettings["MAXKILLING"] = 100
 	simsettings["RUNTIME"] = runtime
 	simsettings["NRCELLS"][1] *= kera_cells_factor
 	sim = new simulation( C, Cim, Cs, simsettings, Ct )
 	sim.initialize()
+
 	seedInfection()
 	step()
 }
@@ -65,7 +65,7 @@ function seedInfection() {
 	let centroids = Cs.getCentroids()
 	for (let i = 0; i < centroids.length; i++) {
 		if(Math.sqrt(Math.pow((centroids[i].x - (field_size/2)), 2) + Math.pow((centroids[i].y - (field_size/2)), 2)) < (field_size*infectionStart)) {
-			C.infection[centroids[i].id] = C.maxInfection / 2
+			sim.infectionlist[centroids[i].id] = 2000 / 2
 			C.setCellKind(centroids[i].id, 3)
 		}
 	}
@@ -126,17 +126,17 @@ function step(){
 	}
 
 	sim.drawCanvas()
-	C.produceChemokine()
-	for (let i = 0; i < 100; i ++){
-		C.updateValues()
-	}
-	C.removeChemokine()
-	if(sim.time%20 == 0){
-		contourplot(C.chemokinelevel)
-		// Cimgradient.drawChemokineGradientFromList( "ffffff" )
-		// Cimgradient.drawChemokineGradientFromList( "0061ff" )
-		// Cim.ctx.drawImage( Cimgradient.el,0,0)
-	}
+	// C.produceChemokine()
+	// for (let i = 0; i < 100; i ++){
+	// 	C.updateValues()
+	// }
+	// C.removeChemokine()
+	// if(sim.time%20 == 0){
+	// 	contourplot(C.chemokinelevel)
+	// 	// Cimgradient.drawChemokineGradientFromList( "ffffff" )
+	// 	// Cimgradient.drawChemokineGradientFromList( "0061ff" )
+	// 	// Cim.ctx.drawImage( Cimgradient.el,0,0)
+	// }
 
 	// Cim.writePNG("output/" + sim.time + ".png")
 

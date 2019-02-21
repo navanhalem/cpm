@@ -33,7 +33,7 @@ class CPMchemotaxis extends CPM {
 		// diffusion variables
 		this.resolutionDecrease = 10
 		this.newSize = this.size/this.resolutionDecrease
-		this.D = 6.2 * Math.pow(10, -5)/10 /* 10 diffusion steps per MCS */ //10 /* factor 10 smaller to test arresting behavior */ 
+		this.D = 6.2 * Math.pow(10, -5)/10 /* 10 diffusion steps per MCS */ //10 /* factor 10 smaller to test arresting behavior */
 		this.dx = .38/(600/this.resolutionDecrease)//1 //pixel
 		this.dt = 60/60//1 //MCS
 		this.secretion = 100 //molecules per lattice site
@@ -81,7 +81,7 @@ class CPMchemotaxis extends CPM {
 	produceChemokine () {
 		for (var x = 0; x < this.size; x++) {
 	    for (var y = 0; y < this.size; y++) {
-				if (this.infection[this.pixt([x,y])] > 0) {
+				if (this.t2k[this.pixt([x,y])] == 3) {
 					let index = [t21(math.floor(x/this.resolutionDecrease),math.floor(y/this.resolutionDecrease),(this.newSize)),0]
 					this.chemokinelevel.set(index, this.chemokinelevel.get(index) + (this.secretion/(this.resolutionDecrease*this.resolutionDecrease)) * this.dt)
 				}
