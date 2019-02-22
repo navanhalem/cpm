@@ -1,0 +1,6 @@
+
+./:
+this folder contains makefiles and files to make those makefiles (the .sh files, and the parameter files (.txt)) for 30 simulations per parameter combination
+
+split_and_min_100_files/:
+this folder contains makefiles for the same simulations as its parent folder, but now the makefiles are split in half, allowing them to be executed on 6 diffrent servers. This folder also includes makefiles for simulations where the chemotaxis parameter is set to values below 100.

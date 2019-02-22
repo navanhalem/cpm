@@ -59,7 +59,7 @@ function initialize(){
 	C.maxTCells = max_CTL
 	C.infectionStart = infectionStart
 	C.maxKilling = killingTime * 60 * avg_border_CTL_infection
-	
+
 	Cim = new CPMCanvas( C, {zoom:zoom,wrap:wrap} )
 	Cimgradient = new BGCanvas( C, {zoom:zoom, wrap:wrap} )
 	Cs = new CPMStats( C )
@@ -94,72 +94,37 @@ function logData() {
 	console.log(sim.time, chemotaxis, killingTime, entryBias, C.countCells(1), C.countCells(5), C.countCells(2), C.countCells(3), C.countCells(4) )
 }
 
-function reportResults(){
-	var tissuedamage = 0
-	var infection = false
-	for (let i = 0; i < C.t2k.length; i ++) {
-		if (C.t2k[i] == 3){
-			tissuedamage += 1
-			infection = true
-		} else if (C.t2k[i] == 4) {
-			tissuedamage += 1
-		}
-	}
-	if(infection == false) {
-		// console.log(chemotaxis, killingTime, entryBias, tissuedamage, sim.time/25/60)
-		report = false
-		// stopSim()
-	}
-	if(sim.time == sim.runtime) {
-		// console.log(chemotaxis, killingTime, entryBias, tissuedamage, sim.runtime/25/60 + 1)
-		report = false
-	}
-}
-
 // Perform a step in the model
 function step(){
 
 	let timestart = sim.time
 
 	while ( sim.time <= sim.runtime && !sim.stop ) {
-		// console.time("MCS")
-		// console.time("mcs")
+		// MCS is performed
 		sim.timestep()
-		// console.timeEnd("mcs")
-		// console.time("chemokine")
-
-		// console.time("p c")
+		// Chemokine is produced by all chemokine grid lattice sites
 		C.produceChemokine()
-		// console.timeEnd("p c")
-
-		// console.time("d c")
+		// Every MCS, the chemokine diffuses 10 times
 		for(let i = 0; i < 10; i++) {
 			C.updateValues()
 		}
-		// console.timeEnd("d c")
-
-		// console.time("update grid")
+		// Updates the main grid with interpolated values of the chemokine grid
 		C.updateGrid()
-		// console.timeEnd("update grid")
-
-		// console.time("r c")
+		// Chemokine decays
 		C.removeChemokine()
-		// console.timeEnd("r c")
-
-		// console.timeEnd("chemokine")
+		// two lines below should be executed if chemokine should be drawn
 		// Cimgradient.drawChemokineGradientFromList( "ffffff" )
 		// Cimgradient.drawChemokineGradientFromList( "0061ff" )
-		// console.timeEnd("MCS")
 		if (savetime != 0) {
 			if (sim.time % savetime == 0) {
-				// console.log(simulationType, sim.time)
 				sim.drawCanvas()
 				Cim.writePNG("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + simulationType + "_" + idnr + ".png")
+				// the line below should be executed if chemokine should be drawn
 				// fs.writeFileSync("output/" + sim.time + "_" + chemotaxis + "_" + killingTime + "_" + entryBias + "_" + simulationType + "G.png", Cimgradient.el.toBuffer())
 			}
 		}
 
-		//log data
+		//log data every 30 MCS and stop simulation if no more infected cells are left
 		if(report && sim.time % 30 == 0){
 			logData()
 			if(C.countCells(3) == 0){

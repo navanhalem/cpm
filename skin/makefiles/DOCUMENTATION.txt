@@ -1,0 +1,10 @@
+finaltests/:
+contains makefiles for the final tests
+
+firstsenstest/:
+caontains makefiles for the first test
+
+simulations/:
+contains the makefiles for the actual simulations
+
+other/unordered files in this folder were used for tests as well, they are not relevant anymore

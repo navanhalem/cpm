@@ -1,0 +1,32 @@
+Changes
+
+BGCanvas.js:
+added functionality for drawing the chemokine(to be written to separate images), not used in simulations
+
+
+CPMCanvas.js:
+added the gray-to-red color gradient for infected cells based on how long they have been infected
+
+
+CPMStats.js:
+one relevant change:
+
+cellNeighborsList : function( cell, cbpi )
+cbpi optional.
+
+returns a list of all cell ids of the cells that border to "cell" and are of a different type, a dictionairy with keys = neighbor cell ids, and values = border interface length
+
+
+CPMchemotaxis.js:
+implemented chemokine diffusion by matrix multiplication. The chemokine diffusses across a lower-resolution grid than the main grid. This allows for faster diffusion speeds, yet still realistic diffusion behavior. at every MSC, the interpolated chemokine value is comupted for every main grid lattice site, this allows for accurate chemotaxis.
+relevant parameters:
+resolutiondecrease, diffusion grid is (1/resolutiondecrease^2) times the area of the main grid
+D, diffusion coefficient
+dx, change in location
+dt, change in time
+-- dx and dt should used to match the units in D and the units in the model. e.g. from cm^/second to pixel/MCS.
+secretion, how many moleclues sould a lattice site secrete
+decay, which percentage of the chemokine decays at every MCS
+
+
+

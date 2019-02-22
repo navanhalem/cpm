@@ -81,6 +81,7 @@ simulation.prototype = {
 
 	},
 
+	// returns cells of type "type" that border "affectors"
 	getCellsToAffect : function( affectors, type ){
 		var cellsToAffect = {}
 		let cbpi = this.Cs.cellborderpixelsi()
@@ -100,6 +101,7 @@ simulation.prototype = {
 		return cellsToAffect
 	},
 
+	// returns cells of type "type"
 	findCells : function(type){
 		var cells = []
 		for( i = 0; i < this.C.t2k.length; i++ ) {
@@ -110,6 +112,7 @@ simulation.prototype = {
 		return cells
 	},
 
+	// CTLs neighboring infected cells have a chance to kill them
 	kill : function(){
 		var killers = this.findCells(1).concat(this.findCells(5))
 		var infectedNeighbors = this.getCellsToAffect( killers, 3 )
@@ -119,18 +122,10 @@ simulation.prototype = {
 			if (rand < value * (1/this.maxKilling) ){
 				this.C.setCellKind(key, 4)
 			}
-			// if (this.C.killing[key] < this.C.maxKilling){
-			// 	this.C.killing[key] = this.C.killing[key] + value
-			// 	//this.Tcell_infection_borders.push(value)
-			// 	if(this.C.killing[key] >= this.C.maxKilling){
-			// 		this.C.killing[key] = this.C.maxKilling
-			// 		this.C.infection[key] = -2
-			// 		this.C.setCellKind(key, 4)
-			// 	}
-			// }
 		}
 	},
 
+	// infected cells neighboring healthy skin cells have a chance ot infect them
 	infectOthers : function(){
 		var infected = this.findCells(3)
 		var skinNeighbors = this.getCellsToAffect( infected, 2 )
@@ -144,6 +139,7 @@ simulation.prototype = {
 		}
 	},
 
+	// infected skin cells will get more infected over time (this only has a consequence for their color)
 	getMoreInfected : function(){
 		for( i = 0; i < this.C.t2k.length; i++ ) {
 			if( this.infectionlist[i] > 0 && this.infectionlist[i] < 2000 ) {
@@ -152,6 +148,7 @@ simulation.prototype = {
 		}
 	},
 
+	// if a CTL replaces an infected cell, a healthy skin cell bordering the infection should be infected immediately
 	replaceInfectionBorderCell : function(cell_idToReplace){
 		// replace border cell with most infected neighbors with this cell
 		var skinNeighbors = this.getCellsToAffect( this.findCells(3), 2 )
@@ -175,6 +172,7 @@ simulation.prototype = {
 		return this.nmod(y,N)*N+this.nmod(x,N)
 	},
 
+	// return x and y based on chemokine level (biased entry)
 	biasedEntry : function() {
 		let xpos = Math.floor( Math.random()*( this.C.field_size.x ) )
 		let ypos = Math.floor( Math.random()*( this.C.field_size.y ) )
@@ -195,6 +193,7 @@ simulation.prototype = {
 		return [xpos, ypos]
 	},
 
+	// adds CTL to the grid
 	addTCell : function() {
 		var cell_idToReplace = -1
 		typeToReplace = 1
@@ -216,6 +215,7 @@ simulation.prototype = {
 		this.C.setCellKind(cell_idToReplace, 1)
 	},
 
+	// changes or resets CTL behavior based on whether or not they border infected cells enough
 	changeCTLBehavior : function() {
 		let CTLs = this.findCells(1).concat(this.findCells(5))
 		let cbpi = this.Cs.cellborderpixelsi()
@@ -242,27 +242,20 @@ simulation.prototype = {
 
 	// Update the grid and either draw it or print track output
 	timestep : function(){
-		// Update the grid with one MCS
-		// console.time("kill")
+		// CTLs first might kill infected cells
 		this.kill()
-		// console.timeEnd("kill")
-		// console.time("IO")
+		// infected cells now may affect others
 		this.infectOthers()
-		// console.timeEnd("IO")
-		// console.time("moreinf")
+		// infected cells will get more infected
 		this.getMoreInfected()
-		// console.timeEnd("moreinf")
-		// console.time("addctl")
+		// sometimes a CTL will appear
 		if ((this.time + 1) % 20 == 0 && this.C.countCells(1) + this.C.countCells(5) < this.C.maxTCells) {
 			this.addTCell()
 		}
-		// console.timeEnd("addctl")
-		// console.time("realmcs")
+		// performs a MCS
 		this.C.monteCarloStep()
-		// console.timeEnd("realmcs")
-		// console.time("changebeh")
+		// chenges behavior of CTLs if needed
 		this.changeCTLBehavior()
-		// console.timeEnd("changebeh")
 		this.time++
 	},
 
@@ -288,6 +281,7 @@ simulation.prototype = {
 		return false
 
 	},
+	
 	nearBorder : function( threshold ){
 
 		// since there is only one cell, this is an array

@@ -1,0 +1,11 @@
+example-browser/:
+browser examples, nothing changed
+
+examples-node/:
+node examples, nothing changed
+
+skin/:
+entirely new folder, contains all new files requires for the simulations
+
+src/:
+CPM source files, some changes made; most important changes are made in CPMchemotaxis

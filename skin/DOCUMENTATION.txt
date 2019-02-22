@@ -1,0 +1,36 @@
+makefiles/:
+contains makefiles and files to generate makefiles
+
+CPMskin-settings.js:
+describes the settings used in the simulation, such as nr of cells, burnin time, runtime, and information about the visualization
+
+CPMskin-template.js:
+describes the parameters used in the simulation
+
+Makefile:
+first Makefile, used for a lot of testing, not relevant
+
+comparison_final_D.make:
+another makefile for testing, not relevant
+
+epidermis0.html:
+the browser-version of te simulations, currently does not work with chemotaxis
+
+epidermis0.js:
+the node-version for the simulation, this should be run for the simulations. It's parameters are:
+runtime, default: 1000 (#MCS in the simulation)
+savetime, default: 0 (set to 0, this will not generate images, otherwise, every "savetime" frames)
+field_size, default: 200 (size of the field)
+chemotaxis, default: 0 (chemotaxis strength)
+infectionStart, default: 0.1 (infection radius from the middle of the field, as a percentage of the field size)
+entryBias, default: 0 (0 for random entry, 1 for biased entry)
+killingTime, default: 15 (killing time, can be any positive integer, 15-60 make most sense)
+simulationType, default: 1 (behavior at infection, 1 for sensitive, 2 for arresting, and 3 for motile)
+infectionChance, default: 0.000025 (every timestep, every skin cell has an "infection chance"*"interface length with infected cells" probability to get infected)
+maxAct, default: 20 (maxAct parameter in Act model)
+lAct, default: 1000 (lambdaAct parameter in Act model)
+borderingparameter, default: 2 (interface length with infected cells should be at least "borderingparameter"/3 of average interface length before behavior changes)
+idnr, default: 0 (idnr of the simulation, to allow multiple videos of similar simulation being made at the same time)
+
+simulation-tissue:
+this is where a lot of the simulation happens

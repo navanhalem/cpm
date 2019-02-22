@@ -180,6 +180,7 @@ class CPMchemotaxis extends CPM {
 		return dir( p2 ) - dir( p1 )
 	}
 
+	// computes the chemokine gradient at lattice site source
 	computeGradient ( source, chemokinelevel ) {
 		let gradient = [0, 0]
 		for ( let i = -1; i < 2; i++ ) {
@@ -192,6 +193,7 @@ class CPMchemotaxis extends CPM {
 		return gradient
 	}
 
+	// additional terms to the Hamiltonian to take chemotaxis into account
 	deltaHchemotaxis ( sourcei, targeti, src_type, tgt_type ){
 		const gradienttype = this.conf["GRADIENT_TYPE"]
 		const gradientvec = this.conf["GRADIENT_DIRECTION"]
