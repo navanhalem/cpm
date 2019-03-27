@@ -374,6 +374,6 @@ simulation.prototype = {
 
 /* This allows using the code in either the browser or with nodejs. */
 if( typeof module !== "undefined" ){
-	var DiceSet = require("../../cpm/src/DiceSet.js")
+	var DiceSet = require("../src/DiceSet.js")
 	module.exports = simulation
 }
